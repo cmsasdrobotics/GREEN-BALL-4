@@ -10,7 +10,7 @@ var Input = {
   left: false,
   right: false,
   jump: false,
-  restart: false
+  restart: false,
   nextLevel: false
 };
 
