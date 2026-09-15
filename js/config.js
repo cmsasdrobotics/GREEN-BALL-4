@@ -21,7 +21,7 @@ var CONFIG = {
   MOVE_SPEED: 0,      // pixels per frame left and right
   MOVE_VELOCITY: 0.5, // amount of change in velocity speed
   MAX_VELOCITY: 8,    // maximum velocity speed
-  MOVE_FRICTION: 1.5,  // amount velocity slows down when not moving
+  MOVE_FRICTION: 1.5, // amount velocity slows down when not moving
   JUMP_POWER: 15,     // how hard the jump pushes UP. bigger = higher
   GRAVITY: 0.8,       // how hard the world pulls DOWN. bigger = heavier
   MAX_FALL: 16,       // fastest the player is allowed to fall
@@ -36,5 +36,5 @@ var CONFIG = {
                       // 0 = dead center, 1 = right on the edge
 
   // --- rules ----------------------------------------------------------
-  START_LEVEL: 0      // which level in data/levels.json to load first
+  START_LEVEL: 1,      // which level in data/levels.json to load first
 };
