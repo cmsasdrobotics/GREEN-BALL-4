@@ -31,9 +31,9 @@ Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
 
   // --- 1. decide how fast to go sideways ------------------------------
-  Player.vx = 0;
-  if (Input.left)  { Player.vx = -CONFIG.MOVE_SPEED; }
-  if (Input.right) { Player.vx =  CONFIG.MOVE_SPEED; }
+  Player.vx = CONFIG.MOVE_SPEED;
+  if (Input.left)  { CONFIG.MOVE_SPEED = CONFIG.MOVE_SPEED - 1; }
+  if (Input.right) { CONFIG.MOVE_SPEED = CONFIG.MOVE_SPEED + 1; }
 
   // --- 2. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {
@@ -47,8 +47,8 @@ Player.update = function () {
 
   // --- 4. move sideways, one pixel at a time, stopping at walls -------
   var stepX = 0;
-  if (Player.vx > 0) { stepX = stepX + 1; }
-  if (Player.vx < 0) { stepX = stepX - 1; }
+  if (Player.vx > 0) { stepX = 1; }
+  if (Player.vx < 0) { stepX = -1; }
 
   for (var i = 0; i < Math.abs(Player.vx); i++) {
     if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) { break; }
