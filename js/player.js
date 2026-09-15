@@ -49,16 +49,15 @@ Player.update = function () {
   if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
 
   // --- 4. move sideways, one pixel at a time, stopping at walls -------
-  var stepX = 0;
-  if (Player.vx > 0) { stepX = 1; }
-  if (Player.vx < 0) { stepX = -1; }
-
-  for (var i = 0; i < Math.abs(Player.vx); i++) {
-    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) { break; }
-    Player.x = Player.x + stepX;
-    Player.angle = Player.angle + stepX / CONFIG.PLAYER_RADIUS; // roll it
+  let StepX = Math.trunc(Player.vx);
+  
+  while (StepX !== 0) {
+      if (!collidesAt(Player.x + Math.sign(StepX), Player.y)) {
+          Player.x += Math.sign(StepX);
+      }
+      StepX -= Math.sign(StepX);
   }
-
+  
   // --- 5. move up or down, one pixel at a time ------------------------
   var stepY = 0;
   if (Player.vy > 0) { stepY = 1; }
