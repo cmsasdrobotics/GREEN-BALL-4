@@ -22,6 +22,7 @@ Player.reset = function () {
   Player.y = Level.startY;
   Player.vx = 0;
   Player.vy = 0;
+  CONFIG.MOVE_SPEED = 0;
   Player.onGround = false;
   Player.angle = 0;
 };
