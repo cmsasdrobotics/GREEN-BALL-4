@@ -19,11 +19,11 @@ var CONFIG = {
 
   // --- how the player moves -------------------------------------------
   MOVE_SPEED: 0,      // pixels per frame left and right
-  MOVE_VELOCITY: 0.5, // amount of change in velocity speed
-  MAX_VELOCITY: 8,    // maximum velocity speed
-  MOVE_FRICTION: 1.5, // amount velocity slows down when not moving
-  JUMP_POWER: 15,     // how hard the jump pushes UP. bigger = higher
-  GRAVITY: 0.8,       // how hard the world pulls DOWN. bigger = heavier
+  MOVE_VELOCITY: 0.25, // amount of change in velocity speed
+  MAX_VELOCITY: 10,    // maximum velocity speed
+  MOVE_FRICTION: 1.2, // amount velocity slows down when not moving
+  JUMP_POWER: 20,     // how hard the jump pushes UP. bigger = higher
+  GRAVITY: 0.7,       // how hard the world pulls DOWN. bigger = heavier
   MAX_FALL: 16,       // fastest the player is allowed to fall
 
   // --- the player's size ----------------------------------------------
