@@ -1,5 +1,5 @@
 {
-  "_comment": "A level is just a list of piece names in order, left to right. Every name you use here must exist in data/pieces.json. Add, remove, or reorder pieces to build a new level. Every level should start with 'start' and end with 'finish'.",
+  "_comment": "A level is just a list of piece names in order, left to right. Every name you use here must exist in data/pieces.json.",
 
   "levels": [
     {
