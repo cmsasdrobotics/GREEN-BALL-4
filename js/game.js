@@ -29,9 +29,20 @@ Game.showMessage = function (text) {
 // --- ONE FRAME --------------------------------------------------------
 Game.update = function () {
 
-  // R always restarts, no matter what mode we are in.
+  // R always restarts current level
   if (Input.restart) {
     Game.startLevel(Game.levelNumber);
+    return;
+  }
+  
+  // N goes to next level (only if we won)
+  if (Input.nextLevel && Game.mode === "won") {
+    var nextLevel = Game.levelNumber + 1;
+    if (nextLevel < Level.levels.length) {
+      Game.startLevel(nextLevel);
+    } else {
+      Game.startLevel(CONFIG.START_LEVEL);  // loop back
+    }
     return;
   }
 
@@ -48,7 +59,15 @@ Game.update = function () {
 
   if (Player.hasWon()) {
     Game.mode = "won";
-    Game.showMessage("You made it. Press R to play again.");
+    var nextLevel = Game.levelNumber + 1;
+    
+    // Check if there's a next level
+    if (nextLevel < Level.levels.length) {
+      Game.showMessage("Level complete! Press N for next level, or R to retry.");
+    } else {
+      Game.showMessage("You beat all levels! Press R to restart from Level 1.");
+      nextLevel = CONFIG.START_LEVEL;  // loop back to first level
+    }
     return;
   }
 };
