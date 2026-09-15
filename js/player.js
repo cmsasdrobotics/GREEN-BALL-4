@@ -55,7 +55,10 @@ Player.update = function () {
   if (Player.vx < -0.1) { stepX = -1; }
 
   for (var i = 0; i < Math.abs(Player.vx); i++) {
-    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) { break; }
+    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) {
+      CONFIG.MOVE_SPEED = 0;
+      break;
+    }
     Player.x = Player.x + stepX;
     Player.angle = Player.angle + stepX / CONFIG.PLAYER_RADIUS; // roll it
   }
