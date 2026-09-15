@@ -66,7 +66,6 @@ Game.update = function () {
       Game.showMessage("Level complete! Press N for next level, or R to retry.");
     } else {
       Game.showMessage("You beat all levels! Press R to restart from Level 1.");
-      nextLevel = CONFIG.START_LEVEL;  // loop back to first level
     }
     return;
   }
