@@ -25,19 +25,15 @@ Draw.updateCamera = function () {
 };
 
 Draw.everything = function () {
-  var ctx = Draw.ctx;
-
-  // Paint the sky and scenery before moving the camera.
   Draw.background();
 
-  ctx.save();
-  ctx.translate(-Draw.cameraX, 0);
+  Draw.ctx.save();
+  Draw.ctx.translate(-Draw.cameraX, 0);
   Draw.world();
   Draw.player();
-  ctx.restore();
+  Draw.ctx.restore();
 };
 
-// A bright grassy-sky background inspired by classic platform games.
 Draw.background = function () {
   var ctx = Draw.ctx;
   var width = CONFIG.CANVAS_W;
@@ -46,12 +42,10 @@ Draw.background = function () {
   ctx.fillStyle = "#83d8ff";
   ctx.fillRect(0, 0, width, height);
 
-  // Soft clouds stay attached to the screen while the level scrolls.
   Draw.cloud(110, 62, 1.0);
   Draw.cloud(410, 105, 0.75);
   Draw.cloud(700, 52, 1.15);
 
-  // Distant green hills.
   ctx.fillStyle = "#69c96b";
   ctx.beginPath();
   ctx.moveTo(0, 315);
@@ -80,7 +74,6 @@ Draw.cloud = function (x, y, scale) {
 };
 
 Draw.world = function () {
-  var ctx = Draw.ctx;
   var size = CONFIG.TILE;
   var firstCol = Math.floor(Draw.cameraX / size) - 1;
   var lastCol = firstCol + Math.ceil(CONFIG.CANVAS_W / size) + 2;
@@ -91,20 +84,31 @@ Draw.world = function () {
       var x = col * size;
       var y = row * size;
 
-      if (here === "#") { Draw.block(x, y, size); }
+      if (here === "#") { Draw.grassBlock(x, y, size); }
+      if (here === "D") { Draw.dirtBlock(x, y, size); }
       if (here === "^") { Draw.spike(x, y, size); }
       if (here === "F") { Draw.finish(x, y, size); }
     }
   }
 };
 
-Draw.block = function (x, y, size) {
+Draw.grassBlock = function (x, y, size) {
   var ctx = Draw.ctx;
   ctx.fillStyle = "#9b633d";
   ctx.fillRect(x, y, size, size);
   ctx.fillStyle = "#55b947";
   ctx.fillRect(x, y, size, 8);
   ctx.strokeStyle = "#4b3427";
+  ctx.lineWidth = CONFIG.LINE_WIDTH;
+  ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
+                 size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
+};
+
+Draw.dirtBlock = function (x, y, size) {
+  var ctx = Draw.ctx;
+  ctx.fillStyle = "#9b633d";
+  ctx.fillRect(x, y, size, size);
+  ctx.strokeStyle = "#70442d";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
                  size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
@@ -137,32 +141,35 @@ Draw.finish = function (x, y, size) {
   ctx.fill();
 };
 
-// The player is a green ball with a friendly face.
+// The whole ball, including its face, rotates as it rolls.
 Draw.player = function () {
   var ctx = Draw.ctx;
   var r = CONFIG.PLAYER_RADIUS;
   var centerX = Player.x + CONFIG.PLAYER_SIZE / 2;
   var centerY = Player.y + CONFIG.PLAYER_SIZE / 2;
 
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(Player.angle);
+
   ctx.fillStyle = "#35d65b";
   ctx.strokeStyle = "#176b35";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // Two eyes.
   ctx.fillStyle = "#17251b";
   ctx.beginPath();
-  ctx.arc(centerX - 6, centerY - 4, 2.5, 0, Math.PI * 2);
-  ctx.arc(centerX + 6, centerY - 4, 2.5, 0, Math.PI * 2);
+  ctx.arc(-6, -4, 2.5, 0, Math.PI * 2);
+  ctx.arc(6, -4, 2.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // A small happy smile.
   ctx.beginPath();
-  ctx.arc(centerX, centerY + 1, 8, 0.15, Math.PI - 0.15);
+  ctx.arc(0, 1, 8, 0.15, Math.PI - 0.15);
   ctx.strokeStyle = "#17251b";
   ctx.lineWidth = 2;
   ctx.stroke();
+  ctx.restore();
 };

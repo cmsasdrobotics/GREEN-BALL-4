@@ -1,5 +1,5 @@
 {
-  "_comment": "Every piece is 8 columns wide and 10 rows tall. Draw it like a picture. '.' is empty air, '#' is a solid block, '^' is a spike, 'S' is where the player starts, 'F' is the finish.",
+  "_comment": "Every piece is 8 columns wide and 10 rows tall. # is a grass-topped block, D is dirt below grass, ^ is a spike, S is the start, and F is the finish.",
 
   "start": [
     "........",
@@ -11,7 +11,7 @@
     "........",
     "..S.....",
     "########",
-    "########"
+    "DDDDDDDD"
   ],
 
   "flat": [
@@ -24,7 +24,7 @@
     "........",
     "........",
     "########",
-    "########"
+    "DDDDDDDD"
   ],
 
   "gap": [
@@ -37,7 +37,7 @@
     "........",
     "........",
     "##....##",
-    "##....##"
+    "DD....DD"
   ],
 
   "spikes": [
@@ -50,7 +50,7 @@
     "........",
     "..^^^^..",
     "########",
-    "########"
+    "DDDDDDDD"
   ],
 
   "step": [
@@ -60,10 +60,10 @@
     "........",
     "........",
     ".....###",
-    ".....###",
-    ".....###",
-    "########",
-    "########"
+    ".....DDD",
+    "#####DDD",
+    "DDDDDDDD",
+    "DDDDDDDD"
   ],
 
   "platform": [
@@ -76,7 +76,7 @@
     "..####..",
     "........",
     "########",
-    "########"
+    "DDDDDDDD"
   ],
 
   "stairs": [
@@ -85,11 +85,10 @@
     "........",
     "........",
     "......##",
-    "....####",
-    "..######",
-    "########",
-    "########",
-    "########"
+    "....##DD",
+    "..##DDDD",
+    "DDDDDDDD",
+    "DDDDDDDD"
   ],
 
   "spikepit": [
@@ -102,9 +101,9 @@
     "..####..",
     ".^^^^^^.",
     "########",
-    "########"
+    "DDDDDDDD"
   ],
-  
+
   "floatingplatform": [
     "........",
     "........",
@@ -126,9 +125,9 @@
     "........",
     "...^^...",
     "..^##^..",
-    "..####..",
-    "########",
-    "########"
+    "..#DD#..",
+    "DDDDDDDD",
+    "DDDDDDDD"
   ],
 
   "finish": [
@@ -141,6 +140,6 @@
     "........",
     "....F...",
     "########",
-    "########"
+    "DDDDDDDD"
   ]
 }
