@@ -51,8 +51,8 @@ Player.update = function () {
 
   // --- 4. move sideways, one pixel at a time, stopping at walls -------
   var stepX = 0;
-  if (Player.vx > 0.1) { stepX = 1; }
-  if (Player.vx < -0.1) { stepX = -1; }
+  if (Player.vx > 0.4) { stepX = 1; }
+  if (Player.vx < -0.4) { stepX = -1; }
 
   for (var i = 0; i < Math.abs(Player.vx); i++) {
     if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) {
