@@ -108,7 +108,7 @@ Draw.finish = function (x, y, size) {
   ctx.fill();
 };
 
-// The player: a white circle with a black outline and one off-center
+// The player: a green circle with a black outline and one off-center
 // black dot, so you can see it roll.
 Draw.player = function () {
   var ctx = Draw.ctx;
