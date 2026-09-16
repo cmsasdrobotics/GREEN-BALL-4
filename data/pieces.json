@@ -1,5 +1,5 @@
 {
-  "_comment": "Every piece is 8 columns wide and 10 rows tall. # is a grass-topped block, D is dirt below grass, ^ is a spike, S is the start, and F is the finish.",
+  "_comment": "Every piece is 8 columns wide and 10 rows tall. # is a grass-topped block, D is dirt below grass, ^ is an upward spike, v is a downward spike, S is the start, and F is the finish.",
 
   "start": [
     "........",
@@ -49,6 +49,19 @@
     "........",
     "........",
     "..^^^^..",
+    "########",
+    "DDDDDDDD"
+  ],
+
+  "downspikes": [
+    "........",
+    "........",
+    "........",
+    "........",
+    "........",
+    "........",
+    "..vvvv..",
+    "........",
     "########",
     "DDDDDDDD"
   ],

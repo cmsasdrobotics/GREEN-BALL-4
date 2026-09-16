@@ -97,7 +97,8 @@ Level.isSolid = function (col, row) {
 };
 
 Level.isSpike = function (col, row) {
-  return Level.charAt(col, row) === "^";
+  var tile = Level.charAt(col, row);
+  return tile === "^" || tile === "v";
 };
 
 Level.isFinish = function (col, row) {

@@ -86,7 +86,8 @@ Draw.world = function () {
 
       if (here === "#") { Draw.grassBlock(x, y, size); }
       if (here === "D") { Draw.dirtBlock(x, y, size); }
-      if (here === "^") { Draw.spike(x, y, size); }
+      if (here === "^") { Draw.spikeUp(x, y, size); }
+      if (here === "v") { Draw.spikeDown(x, y, size); }
       if (here === "F") { Draw.finish(x, y, size); }
     }
   }
@@ -114,7 +115,7 @@ Draw.dirtBlock = function (x, y, size) {
                  size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
 };
 
-Draw.spike = function (x, y, size) {
+Draw.spikeUp = function (x, y, size) {
   var ctx = Draw.ctx;
   ctx.fillStyle = "#e84b4b";
   ctx.strokeStyle = "#8d2020";
@@ -123,6 +124,20 @@ Draw.spike = function (x, y, size) {
   ctx.moveTo(x, y + size);
   ctx.lineTo(x + size / 2, y);
   ctx.lineTo(x + size, y + size);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+};
+
+Draw.spikeDown = function (x, y, size) {
+  var ctx = Draw.ctx;
+  ctx.fillStyle = "#e84b4b";
+  ctx.strokeStyle = "#8d2020";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + size / 2, y + size);
+  ctx.lineTo(x + size, y);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
