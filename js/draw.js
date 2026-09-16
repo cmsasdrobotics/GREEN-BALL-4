@@ -2,17 +2,12 @@
    draw.js  --  EVERYTHING YOU CAN SEE.
 
    Nothing in this file changes the game. It only puts pixels on screen.
-   If you want to change how the game LOOKS, this is the only file you
-   need. If you want to change how it BEHAVES, this is the wrong file.
-
-   The whole game is black and white on purpose. That is your room to
-   work in.
    ===================================================================== */
 
 var Draw = {
   canvas: null,
   ctx: null,
-  cameraX: 0     // how far the view has scrolled to the right
+  cameraX: 0
 };
 
 Draw.setup = function () {
@@ -20,42 +15,75 @@ Draw.setup = function () {
   Draw.ctx = Draw.canvas.getContext("2d");
 };
 
-// Follow the player, but never scroll past the ends of the level.
 Draw.updateCamera = function () {
   Draw.cameraX = Player.x - CONFIG.CANVAS_W / 2;
   if (Draw.cameraX < 0) { Draw.cameraX = 0; }
 
   var furthest = Level.pixelWidth() - CONFIG.CANVAS_W;
-  if (furthest < 0) { furthest = 0; }   // level narrower than the screen
+  if (furthest < 0) { furthest = 0; }
   if (Draw.cameraX > furthest) { Draw.cameraX = furthest; }
 };
 
-// Draw one whole frame.
 Draw.everything = function () {
   var ctx = Draw.ctx;
 
-  // 1. wipe the screen white
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  // Paint the sky and scenery before moving the camera.
+  Draw.background();
 
-  // 2. shift everything left so the camera looks like it moved right
   ctx.save();
   ctx.translate(-Draw.cameraX, 0);
-
   Draw.world();
   Draw.player();
-
   ctx.restore();
 };
 
-// Draw every grid square that is currently on screen.
+// A bright grassy-sky background inspired by classic platform games.
+Draw.background = function () {
+  var ctx = Draw.ctx;
+  var width = CONFIG.CANVAS_W;
+  var height = CONFIG.CANVAS_H;
+
+  ctx.fillStyle = "#83d8ff";
+  ctx.fillRect(0, 0, width, height);
+
+  // Soft clouds stay attached to the screen while the level scrolls.
+  Draw.cloud(110, 62, 1.0);
+  Draw.cloud(410, 105, 0.75);
+  Draw.cloud(700, 52, 1.15);
+
+  // Distant green hills.
+  ctx.fillStyle = "#69c96b";
+  ctx.beginPath();
+  ctx.moveTo(0, 315);
+  ctx.quadraticCurveTo(130, 220, 270, 315);
+  ctx.quadraticCurveTo(420, 205, 590, 315);
+  ctx.quadraticCurveTo(700, 235, 800, 300);
+  ctx.lineTo(800, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
+  ctx.fill();
+};
+
+Draw.cloud = function (x, y, scale) {
+  var ctx = Draw.ctx;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.beginPath();
+  ctx.arc(0, 12, 18, 0, Math.PI * 2);
+  ctx.arc(22, 2, 25, 0, Math.PI * 2);
+  ctx.arc(51, 13, 17, 0, Math.PI * 2);
+  ctx.fillRect(0, 12, 51, 18);
+  ctx.fill();
+  ctx.restore();
+};
+
 Draw.world = function () {
   var ctx = Draw.ctx;
   var size = CONFIG.TILE;
-
-  // only look at the columns that are actually visible. much faster.
   var firstCol = Math.floor(Draw.cameraX / size) - 1;
-  var lastCol  = firstCol + Math.ceil(CONFIG.CANVAS_W / size) + 2;
+  var lastCol = firstCol + Math.ceil(CONFIG.CANVAS_W / size) + 2;
 
   for (var row = 0; row < CONFIG.ROWS; row++) {
     for (var col = firstCol; col <= lastCol; col++) {
@@ -70,67 +98,71 @@ Draw.world = function () {
   }
 };
 
-// A solid block: white inside, black outline.
 Draw.block = function (x, y, size) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#9b633d";
   ctx.fillRect(x, y, size, size);
-  ctx.strokeStyle = "#000000";
+  ctx.fillStyle = "#55b947";
+  ctx.fillRect(x, y, size, 8);
+  ctx.strokeStyle = "#4b3427";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
-  ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2,
-                 y + CONFIG.LINE_WIDTH / 2,
-                 size - CONFIG.LINE_WIDTH,
-                 size - CONFIG.LINE_WIDTH);
+  ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
+                 size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
 };
 
-// A spike: a solid black triangle pointing up.
 Draw.spike = function (x, y, size) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#e84b4b";
+  ctx.strokeStyle = "#8d2020";
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(x, y + size);
   ctx.lineTo(x + size / 2, y);
   ctx.lineTo(x + size, y + size);
   ctx.closePath();
   ctx.fill();
+  ctx.stroke();
 };
 
-// The finish: a black pole with a flag on it.
 Draw.finish = function (x, y, size) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#5a3826";
   ctx.fillRect(x + size / 2 - 2, y, 4, size);
+  ctx.fillStyle = "#ffd447";
   ctx.beginPath();
   ctx.moveTo(x + size / 2 + 2, y + 4);
-  ctx.lineTo(x + size - 4,     y + 12);
+  ctx.lineTo(x + size - 4, y + 12);
   ctx.lineTo(x + size / 2 + 2, y + 20);
   ctx.closePath();
   ctx.fill();
 };
 
-// The player: a green circle with a black outline and one off-center
-// black dot, so you can see it roll.
+// The player is a green ball with a friendly face.
 Draw.player = function () {
   var ctx = Draw.ctx;
   var r = CONFIG.PLAYER_RADIUS;
   var centerX = Player.x + CONFIG.PLAYER_SIZE / 2;
   var centerY = Player.y + CONFIG.PLAYER_SIZE / 2;
 
-  // the circle
-  ctx.fillStyle = "#33ff55";
-  ctx.strokeStyle = "#000000";
+  ctx.fillStyle = "#35d65b";
+  ctx.strokeStyle = "#176b35";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.beginPath();
   ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // the off-center dot. its position depends on how far we have rolled.
-  var dotX = centerX + Math.cos(Player.angle) * r * CONFIG.DOT_DISTANCE;
-  var dotY = centerY + Math.sin(Player.angle) * r * CONFIG.DOT_DISTANCE;
-
-  ctx.fillStyle = "#000000";
+  // Two eyes.
+  ctx.fillStyle = "#17251b";
   ctx.beginPath();
-  ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+  ctx.arc(centerX - 6, centerY - 4, 2.5, 0, Math.PI * 2);
+  ctx.arc(centerX + 6, centerY - 4, 2.5, 0, Math.PI * 2);
   ctx.fill();
+
+  // A small happy smile.
+  ctx.beginPath();
+  ctx.arc(centerX, centerY + 1, 8, 0.15, Math.PI - 0.15);
+  ctx.strokeStyle = "#17251b";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 };
