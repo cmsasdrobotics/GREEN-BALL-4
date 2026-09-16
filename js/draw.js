@@ -108,7 +108,7 @@ Draw.dirtBlock = function (x, y, size) {
   var ctx = Draw.ctx;
   ctx.fillStyle = "#9b633d";
   ctx.fillRect(x, y, size, size);
-  ctx.strokeStyle = "#70442d";
+  ctx.strokeStyle = "#4b3427";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
                  size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
