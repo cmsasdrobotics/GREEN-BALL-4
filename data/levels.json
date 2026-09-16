@@ -28,6 +28,17 @@
         "flat",
         "finish"
       ]
+    },
+    {
+      "name": "Level 3 - An Enemy!",
+      "pieces": [
+        "start",
+        "spikepit",
+        "gap",
+        "spikepit",
+        "floatingplatform",
+        "finish"
+      ]
     }
   ]
 }
