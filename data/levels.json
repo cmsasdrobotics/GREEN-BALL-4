@@ -38,6 +38,9 @@
         "spikepit",
         "floatingplatform",
         "spikedplatform",
+        "powerup",
+        "enemy",
+        "tallspikes",
         "finish"
       ]
     }
