@@ -1,5 +1,5 @@
 /* =====================================================================
-   draw.js -- EVERYTHING YOU CAN SEE.
+   draw.js  --  EVERYTHING YOU CAN SEE.
    ===================================================================== */
 
 var Draw = {
@@ -16,6 +16,7 @@ Draw.setup = function () {
 Draw.updateCamera = function () {
   Draw.cameraX = Player.x - CONFIG.CANVAS_W / 2;
   if (Draw.cameraX < 0) { Draw.cameraX = 0; }
+
   var furthest = Level.pixelWidth() - CONFIG.CANVAS_W;
   if (furthest < 0) { furthest = 0; }
   if (Draw.cameraX > furthest) { Draw.cameraX = furthest; }
@@ -23,6 +24,7 @@ Draw.updateCamera = function () {
 
 Draw.everything = function () {
   Draw.background();
+
   Draw.ctx.save();
   Draw.ctx.translate(-Draw.cameraX, 0);
   Draw.world();
@@ -35,19 +37,24 @@ Draw.everything = function () {
 
 Draw.background = function () {
   var ctx = Draw.ctx;
+  var width = CONFIG.CANVAS_W;
+  var height = CONFIG.CANVAS_H;
+
   ctx.fillStyle = "#83d8ff";
-  ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
-  Draw.cloud(110, 62, 1);
+  ctx.fillRect(0, 0, width, height);
+
+  Draw.cloud(110, 62, 1.0);
   Draw.cloud(410, 105, 0.75);
   Draw.cloud(700, 52, 1.15);
+
   ctx.fillStyle = "#69c96b";
   ctx.beginPath();
   ctx.moveTo(0, 315);
   ctx.quadraticCurveTo(130, 220, 270, 315);
   ctx.quadraticCurveTo(420, 205, 590, 315);
   ctx.quadraticCurveTo(700, 235, 800, 300);
-  ctx.lineTo(800, CONFIG.CANVAS_H);
-  ctx.lineTo(0, CONFIG.CANVAS_H);
+  ctx.lineTo(800, height);
+  ctx.lineTo(0, height);
   ctx.closePath();
   ctx.fill();
 };
@@ -57,7 +64,7 @@ Draw.cloud = function (x, y, scale) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
   ctx.beginPath();
   ctx.arc(0, 12, 18, 0, Math.PI * 2);
   ctx.arc(22, 2, 25, 0, Math.PI * 2);
@@ -71,82 +78,64 @@ Draw.world = function () {
   var size = CONFIG.TILE;
   var firstCol = Math.floor(Draw.cameraX / size) - 1;
   var lastCol = firstCol + Math.ceil(CONFIG.CANVAS_W / size) + 2;
+
   for (var row = 0; row < CONFIG.ROWS; row++) {
     for (var col = firstCol; col <= lastCol; col++) {
-      var tile = Level.charAt(col, row);
+      var here = Level.charAt(col, row);
       var x = col * size;
       var y = row * size;
-      if (tile === "#") { Draw.grassBlock(x, y, size); }
-      if (tile === "D") { Draw.dirtBlock(x, y, size); }
-      if (tile === "^") { Draw.spikeUp(x, y, size); }
-      if (tile === "v") { Draw.spikeDown(x, y, size); }
-      if (tile === "F") { Draw.finish(x, y, size); }
+
+      if (here === "#") { Draw.grassBlock(x, y, size); }
+      if (here === "D") { Draw.dirtBlock(x, y, size); }
+      if (here === "^") { Draw.spikeUp(x, y, size); }
+      if (here === "v") { Draw.spikeDown(x, y, size); }
+      if (here === "F") { Draw.finish(x, y, size); }
     }
   }
-
-  // Draw the virtual right-edge barrier. It is not part of any piece.
-  Draw.endBarrier(Level.pixelWidth(), 0, size);
-};
-
-Draw.endBarrier = function (x, y, size) {
-  var ctx = Draw.ctx;
-  var height = CONFIG.ROWS * size;
-  ctx.fillStyle = "#9b633d";
-  ctx.fillRect(x, y, size, height);
-  ctx.fillStyle = "#55b947";
-  ctx.fillRect(x, y, 8, height);
-  ctx.strokeStyle = "#4b3427";
-  ctx.lineWidth = CONFIG.LINE_WIDTH;
-  ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
-                 size - CONFIG.LINE_WIDTH, height - CONFIG.LINE_WIDTH);
 };
 
 Draw.collectibles = function () {
   for (var i = 0; i < Level.ammoPickups.length; i++) {
     var pickup = Level.ammoPickups[i];
-    if (pickup.active) {
-      var bob = Math.sin(Date.now() / 180 + pickup.x) * 3;
-      Draw.ammo(pickup.x, pickup.y + bob, pickup.width);
-    }
+    if (pickup.active) { Draw.ammo(pickup.x, pickup.y, 20); }
   }
 };
 
 Draw.ammo = function (x, y, size) {
   var ctx = Draw.ctx;
-  var centerX = x + size / 2;
-  var centerY = y + size / 2;
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(Math.PI / 4);
-  ctx.fillStyle = "#ffd447";
-  ctx.strokeStyle = "#9b6b00";
+  ctx.fillStyle = "#f9dc5c";
+  ctx.fillRect(x, y, size, size);
+  ctx.strokeStyle = "#000000";
   ctx.lineWidth = 2;
-  ctx.fillRect(-size / 2, -size / 2, size, size);
-  ctx.strokeRect(-size / 2, -size / 2, size, size);
-  ctx.restore();
-  ctx.fillStyle = "#6d4800";
-  ctx.font = "bold 10px monospace";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("+5", centerX, centerY);
+  ctx.beginPath();
+  ctx.moveTo(x + 5, y + size / 2);
+  ctx.lineTo(x + size - 5, y + size / 2);
+  ctx.stroke();
 };
 
 Draw.enemies = function () {
   for (var i = 0; i < Level.enemies.length; i++) {
     var enemy = Level.enemies[i];
-    if (enemy.alive) {
-      Draw.enemy(enemy.x, enemy.y, enemy.width, enemy.height);
-    }
+    if (enemy.alive) { Draw.enemy(enemy.x, enemy.y, enemy.width, enemy.height); }
   }
 };
 
 Draw.enemy = function (x, y, width, height) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#d93434";
-  ctx.strokeStyle = "#741c2a";
-  ctx.lineWidth = 3;
+  var spikeWidth = width * 0.66;
+  var spikeHeight = height * 0.5;
+
+  ctx.fillStyle = "#9aa0a6";
+  ctx.beginPath();
+  ctx.moveTo(x + width / 2, y - spikeHeight * 0.25);
+  ctx.lineTo(x + width / 2 + spikeWidth / 2, y + spikeHeight);
+  ctx.lineTo(x + width / 2 - spikeWidth / 2, y + spikeHeight);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#d33b2a";
   ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
-  ctx.strokeRect(x + 2, y + 2, width - 4, height - 4);
+
   ctx.fillStyle = "#000000";
   ctx.beginPath();
   ctx.arc(x + width * 0.32, y + height * 0.34, 3, 0, Math.PI * 2);
@@ -163,26 +152,8 @@ Draw.pellets = function () {
 
 Draw.pellet = function (x, y, width, height) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#fff4a3";
-  ctx.strokeStyle = "#d88b00";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  Draw.roundedRect(ctx, x, y, width, height, 3);
-  ctx.fill();
-  ctx.stroke();
-};
-
-Draw.roundedRect = function (ctx, x, y, width, height, radius) {
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
+  ctx.fillStyle = "#f7b801";
+  ctx.fillRect(x, y, width, height);
 };
 
 Draw.grassBlock = function (x, y, size) {
@@ -253,9 +224,11 @@ Draw.player = function () {
   var r = CONFIG.PLAYER_RADIUS;
   var centerX = Player.x + CONFIG.PLAYER_SIZE / 2;
   var centerY = Player.y + CONFIG.PLAYER_SIZE / 2;
+
   ctx.save();
   ctx.translate(centerX, centerY);
   ctx.rotate(Player.angle);
+
   ctx.fillStyle = "#35d65b";
   ctx.strokeStyle = "#176b35";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
@@ -263,6 +236,7 @@ Draw.player = function () {
   ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+
   ctx.fillStyle = "#000000";
   ctx.beginPath();
   ctx.arc(-6, -4, 2.5, 0, Math.PI * 2);
