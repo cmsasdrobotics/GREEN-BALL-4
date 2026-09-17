@@ -131,11 +131,13 @@ Level.charAt = function (col, row) {
   return Level.grid[row].charAt(col);
 };
 
-// The level has an invisible solid barrier immediately after its final
-// column. This keeps the player from walking or rolling off the right edge
-// without requiring an extra end piece in every level.
+// Both level edges act like solid walls. Player.update() already clears
+// horizontal momentum whenever it collides with a solid tile, so touching
+// the starting wall now stops the player instead of leaving speed behind.
 Level.isSolid = function (col, row) {
+  if (col < 0 && row >= 0 && row < CONFIG.ROWS) { return true; }
   if (col === Level.cols && row >= 0 && row < CONFIG.ROWS) { return true; }
+
   var tile = Level.charAt(col, row);
   return tile === "#" || tile === "D";
 };
