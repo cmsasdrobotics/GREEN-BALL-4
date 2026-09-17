@@ -13,7 +13,10 @@ var Level = {
   cols: 0,
   name: "",
   startX: 0,
-  startY: 0
+  startY: 0,
+  ammoPickups: [],
+  enemies: [],
+  pellets: []
 };
 
 // Read both JSON files before starting the game.
@@ -66,7 +69,40 @@ Level.build = function (levelNumber) {
     }
   }
 
+  Level.resetEntities();
   Level.findStart();
+};
+
+Level.resetEntities = function () {
+  Level.ammoPickups = [];
+  Level.enemies = [];
+  Level.pellets = [];
+
+  for (var row = 0; row < CONFIG.ROWS; row++) {
+    for (var col = 0; col < Level.cols; col++) {
+      var tile = Level.charAt(col, row);
+
+      if (tile === "-") {
+        Level.ammoPickups.push({
+          x: col * CONFIG.TILE + 6,
+          y: row * CONFIG.TILE + 6,
+          width: 20,
+          height: 20,
+          active: true
+        });
+      }
+
+      if (tile === "1") {
+        Level.enemies.push({
+          x: col * CONFIG.TILE,
+          y: row * CONFIG.TILE,
+          width: CONFIG.TILE,
+          height: CONFIG.TILE,
+          alive: true
+        });
+      }
+    }
+  }
 };
 
 Level.findStart = function () {
@@ -90,7 +126,6 @@ Level.charAt = function (col, row) {
   return Level.grid[row].charAt(col);
 };
 
-// Both grass-topped blocks (#) and dirt blocks (D) are solid.
 Level.isSolid = function (col, row) {
   var tile = Level.charAt(col, row);
   return tile === "#" || tile === "D";

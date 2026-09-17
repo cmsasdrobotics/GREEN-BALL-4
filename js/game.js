@@ -1,54 +1,93 @@
 /* =====================================================================
-   collide.js  --  DID THE PLAYER TOUCH SOMETHING?
+   game.js  --  THE RULES AND THE LOOP.
 
-   The player is a BOX for collision, even though it is drawn as a
-   circle. Boxes are much easier to check, and nobody can tell.
+   The game is always in exactly ONE mode: "playing", "dead", or "won".
    ===================================================================== */
 
-var Collide = {};
+var Game = {
+  mode: "playing",
+  levelNumber: 0
+};
 
-Collide.squaresUnder = function (x, y, width, height) {
-  var firstCol = Math.floor(x / CONFIG.TILE);
-  var lastCol  = Math.floor((x + width  - 1) / CONFIG.TILE);
-  var firstRow = Math.floor(y / CONFIG.TILE);
-  var lastRow  = Math.floor((y + height - 1) / CONFIG.TILE);
+Game.startLevel = function (levelNumber) {
+  Game.levelNumber = levelNumber;
+  Level.build(levelNumber);
+  Player.reset();
+  Game.mode = "playing";
+  Game.showMessage("");
+};
 
-  var squares = [];
-  for (var row = firstRow; row <= lastRow; row++) {
-    for (var col = firstCol; col <= lastCol; col++) {
-      squares.push({ col: col, row: row });
+Game.showMessage = function (text) {
+  document.getElementById("message").textContent = text;
+};
+
+Game.update = function () {
+  if (Input.restart) {
+    Game.startLevel(Game.levelNumber);
+    return;
+  }
+
+  if (Input.nextLevel && Game.mode === "won") {
+    var nextLevel = Game.levelNumber + 1;
+    if (nextLevel < Level.levels.length) {
+      Game.startLevel(nextLevel);
+    } else {
+      Game.startLevel(CONFIG.START_LEVEL);
+    }
+    return;
+  }
+
+  if (Game.mode !== "playing") { return; }
+
+  Player.update();
+
+  for (var i = 0; i < Level.ammoPickups.length; i++) {
+    var pickup = Level.ammoPickups[i];
+    if (pickup.active && Collide.overlaps({ x: Player.x, y: Player.y, width: CONFIG.PLAYER_SIZE, height: CONFIG.PLAYER_SIZE }, pickup)) {
+      pickup.active = false;
+      Player.ammo = Player.ammo + 5;
     }
   }
-  return squares;
-};
 
-Collide.hitsSolid = function (x, y, width, height) {
-  var squares = Collide.squaresUnder(x, y, width, height);
-  for (var i = 0; i < squares.length; i++) {
-    if (Level.isSolid(squares[i].col, squares[i].row)) { return true; }
+  for (var p = Level.pellets.length - 1; p >= 0; p--) {
+    var pellet = Level.pellets[p];
+    pellet.x = pellet.x + pellet.vx;
+
+    for (var e = 0; e < Level.enemies.length; e++) {
+      var enemy = Level.enemies[e];
+      if (enemy.alive && Collide.overlaps(pellet, enemy)) {
+        enemy.alive = false;
+        Level.pellets.splice(p, 1);
+        break;
+      }
+    }
+
+    if (p >= 0 && Level.pellets[p] && (Level.pellets[p].x < 0 || Level.pellets[p].x > Level.pixelWidth())) {
+      Level.pellets.splice(p, 1);
+    }
   }
-  return false;
-};
 
-Collide.hitsSpike = function (x, y, width, height) {
-  var squares = Collide.squaresUnder(x, y, width, height);
-  for (var i = 0; i < squares.length; i++) {
-    if (Level.isSpike(squares[i].col, squares[i].row)) { return true; }
+  if (Player.isDead()) {
+    Game.mode = "dead";
+    Game.showMessage("You hit something. Press R to try again.");
+    return;
   }
-  return false;
-};
 
-Collide.hitsFinish = function (x, y, width, height) {
-  var squares = Collide.squaresUnder(x, y, width, height);
-  for (var i = 0; i < squares.length; i++) {
-    if (Level.isFinish(squares[i].col, squares[i].row)) { return true; }
+  if (Player.hasWon()) {
+    Game.mode = "won";
+    var nextLevel = Game.levelNumber + 1;
+    if (nextLevel < Level.levels.length) {
+      Game.showMessage("Level complete! Press N for next level, or R to retry.");
+    } else {
+      Game.showMessage("You beat all levels! Press R to restart from Level 1.");
+    }
+    return;
   }
-  return false;
 };
 
-Collide.overlaps = function (a, b) {
-  return a.x < b.x + b.width &&
-         a.x + a.width > b.x &&
-         a.y < b.y + b.height &&
-         a.y + a.height > b.y;
+Game.loop = function () {
+  Game.update();
+  Draw.updateCamera();
+  Draw.everything();
+  window.requestAnimationFrame(Game.loop);
 };
