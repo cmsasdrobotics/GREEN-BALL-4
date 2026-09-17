@@ -34,18 +34,15 @@ Game.updateEnemies = function () {
     var feetRow = Math.floor(feetY / CONFIG.TILE);
     var blocked = false;
 
-    // Stay inside the piece/chunk where the enemy was placed.
     if (nextX < enemy.chunkLeft || nextX + enemy.width > enemy.chunkRight) {
       blocked = true;
     }
 
-    // Turn at a wall or any spike in front of the enemy.
     if (Collide.hitsSolid(nextX, enemy.y, enemy.width, enemy.height) ||
         Level.isSpike(frontCol, Math.floor((enemy.y + enemy.height / 2) / CONFIG.TILE))) {
       blocked = true;
     }
 
-    // Turn before a pit: there must be ground under the next step.
     if (!Level.isSolid(feetCol, feetRow)) {
       blocked = true;
     }
@@ -90,6 +87,13 @@ Game.update = function () {
   for (var p = Level.pellets.length - 1; p >= 0; p--) {
     var pellet = Level.pellets[p];
     pellet.x = pellet.x + pellet.vx;
+
+    // Pellets disappear when they hit any solid block, including the
+    // invisible barriers at the left and right edges of the level.
+    if (Collide.hitsSolid(pellet.x, pellet.y, pellet.width, pellet.height)) {
+      Level.pellets.splice(p, 1);
+      continue;
+    }
 
     for (var e = 0; e < Level.enemies.length; e++) {
       var enemy = Level.enemies[e];
