@@ -93,11 +93,16 @@ Level.resetEntities = function () {
       }
 
       if (tile === "1") {
+        var chunk = Math.floor(col / CONFIG.PIECE_COLS);
         Level.enemies.push({
           x: col * CONFIG.TILE,
           y: row * CONFIG.TILE,
           width: CONFIG.TILE,
           height: CONFIG.TILE,
+          direction: -1,
+          speed: 1,
+          chunkLeft: chunk * CONFIG.PIECE_COLS * CONFIG.TILE,
+          chunkRight: (chunk + 1) * CONFIG.PIECE_COLS * CONFIG.TILE,
           alive: true
         });
       }
