@@ -142,6 +142,22 @@ Draw.enemies = function () {
 
 Draw.enemy = function (x, y, width, height) {
   var ctx = Draw.ctx;
+  var spikeWidth = width * (2 / 3);
+  var spikeHeight = height * (1 / 2);
+  var spikeLeft = x + (width - spikeWidth) / 2;
+
+  // The spike sits on the enemy's head to show it cannot be squished.
+  ctx.fillStyle = "#e84b4b";
+  ctx.strokeStyle = "#8d2020";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(spikeLeft, y + 3);
+  ctx.lineTo(x + width / 2, y - spikeHeight);
+  ctx.lineTo(spikeLeft + spikeWidth, y + 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
   ctx.fillStyle = "#d93434";
   ctx.strokeStyle = "#741c2a";
   ctx.lineWidth = 3;
