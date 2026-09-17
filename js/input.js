@@ -1,39 +1,93 @@
 /* =====================================================================
-   input.js  --  READING THE KEYBOARD.
+   game.js  --  THE RULES AND THE LOOP.
 
-   Nothing in here decides what happens. It only records which keys are
-   being held down right now. js/player.js is what reads these values
-   and decides to move.
+   The game is always in exactly ONE mode: "playing", "dead", or "won".
    ===================================================================== */
 
-var Input = {
-  left: false,
-  right: false,
-  jump: false,
-  restart: false,
-  nextLevel: false
+var Game = {
+  mode: "playing",
+  levelNumber: 0
 };
 
-// Called whenever a key goes DOWN.
-window.addEventListener("keydown", function (event) {
-  setKey(event.key, true);
-  // stop the arrow keys and space from scrolling the page
-  if (["ArrowLeft", "ArrowRight", "ArrowUp", " "].indexOf(event.key) >= 0) {
-    event.preventDefault();
+Game.startLevel = function (levelNumber) {
+  Game.levelNumber = levelNumber;
+  Level.build(levelNumber);
+  Player.reset();
+  Game.mode = "playing";
+  Game.showMessage("");
+};
+
+Game.showMessage = function (text) {
+  document.getElementById("message").textContent = text;
+};
+
+Game.update = function () {
+  if (Input.restart) {
+    Game.startLevel(Game.levelNumber);
+    return;
   }
-});
 
-// Called whenever a key comes back UP.
-window.addEventListener("keyup", function (event) {
-  setKey(event.key, false);
-});
+  if (Input.nextLevel && Game.mode === "won") {
+    var nextLevel = Game.levelNumber + 1;
+    if (nextLevel < Level.levels.length) {
+      Game.startLevel(nextLevel);
+    } else {
+      Game.startLevel(CONFIG.START_LEVEL);
+    }
+    return;
+  }
 
-// One place that decides which key means what.
-// WANT TO ADD A KEY? Add a line here.
-function setKey(key, isDown) {
-  if (key === "ArrowLeft"  || key === "a" || key === "A") { Input.left  = isDown; }
-  if (key === "ArrowRight" || key === "d" || key === "D") { Input.right = isDown; }
-  if (key === "ArrowUp"    || key === " " || key === "w" || key === "W") { Input.jump = isDown; }
-  if (key === "n" || key === "N") { Input.nextLevel = isDown; }
-  if (key === "r" || key === "R") { Input.restart = isDown; }
-}
+  if (Game.mode !== "playing") { return; }
+
+  Player.update();
+
+  for (var i = 0; i < Level.ammoPickups.length; i++) {
+    var pickup = Level.ammoPickups[i];
+    if (pickup.active && Collide.overlaps({ x: Player.x, y: Player.y, width: CONFIG.PLAYER_SIZE, height: CONFIG.PLAYER_SIZE }, pickup)) {
+      pickup.active = false;
+      Player.ammo = Player.ammo + 5;
+    }
+  }
+
+  for (var p = Level.pellets.length - 1; p >= 0; p--) {
+    var pellet = Level.pellets[p];
+    pellet.x = pellet.x + pellet.vx;
+
+    for (var e = 0; e < Level.enemies.length; e++) {
+      var enemy = Level.enemies[e];
+      if (enemy.alive && Collide.overlaps(pellet, enemy)) {
+        enemy.alive = false;
+        Level.pellets.splice(p, 1);
+        break;
+      }
+    }
+
+    if (p >= 0 && Level.pellets[p] && (Level.pellets[p].x < 0 || Level.pellets[p].x > Level.pixelWidth())) {
+      Level.pellets.splice(p, 1);
+    }
+  }
+
+  if (Player.isDead()) {
+    Game.mode = "dead";
+    Game.showMessage("You hit something. Press R to try again.");
+    return;
+  }
+
+  if (Player.hasWon()) {
+    Game.mode = "won";
+    var nextLevel = Game.levelNumber + 1;
+    if (nextLevel < Level.levels.length) {
+      Game.showMessage("Level complete! Press N for next level, or R to retry.");
+    } else {
+      Game.showMessage("You beat all levels! Press R to restart from Level 1.");
+    }
+    return;
+  }
+};
+
+Game.loop = function () {
+  Game.update();
+  Draw.updateCamera();
+  Draw.everything();
+  window.requestAnimationFrame(Game.loop);
+};

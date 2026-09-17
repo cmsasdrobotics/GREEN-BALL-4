@@ -1,80 +1,54 @@
 /* =====================================================================
-   game.js  --  THE RULES AND THE LOOP.
+   collide.js  --  DID THE PLAYER TOUCH SOMETHING?
 
-   The game is always in exactly ONE mode: "playing", "dead", or "won".
-   Which mode it is in decides what happens each frame.
-
-   The loop runs about 60 times a second, forever. Every time it runs it
-   does the same two things: UPDATE (change the numbers) and DRAW (show
-   the numbers).
+   The player is a BOX for collision, even though it is drawn as a
+   circle. Boxes are much easier to check, and nobody can tell.
    ===================================================================== */
 
-var Game = {
-  mode: "playing",   // "playing", "dead", or "won"
-  levelNumber: 0
-};
+var Collide = {};
 
-Game.startLevel = function (levelNumber) {
-  Game.levelNumber = levelNumber;
-  Level.build(levelNumber);
-  Player.reset();
-  Game.mode = "playing";
-  Game.showMessage("");
-};
+Collide.squaresUnder = function (x, y, width, height) {
+  var firstCol = Math.floor(x / CONFIG.TILE);
+  var lastCol  = Math.floor((x + width  - 1) / CONFIG.TILE);
+  var firstRow = Math.floor(y / CONFIG.TILE);
+  var lastRow  = Math.floor((y + height - 1) / CONFIG.TILE);
 
-Game.showMessage = function (text) {
-  document.getElementById("message").textContent = text;
-};
-
-// --- ONE FRAME --------------------------------------------------------
-Game.update = function () {
-
-  // R always restarts current level
-  if (Input.restart) {
-    Game.startLevel(Game.levelNumber);
-    return;
-  }
-  
-  // N goes to next level (only if we won)
-  if (Input.nextLevel && Game.mode === "won") {
-    var nextLevel = Game.levelNumber + 1;
-    if (nextLevel < Level.levels.length) {
-      Game.startLevel(nextLevel);
-    } else {
-      Game.startLevel(CONFIG.START_LEVEL);  // loop back
+  var squares = [];
+  for (var row = firstRow; row <= lastRow; row++) {
+    for (var col = firstCol; col <= lastCol; col++) {
+      squares.push({ col: col, row: row });
     }
-    return;
   }
-
-  // If we are not playing, nothing moves. We just wait for R.
-  if (Game.mode !== "playing") { return; }
-
-  Player.update();
-
-  if (Player.isDead()) {
-    Game.mode = "dead";
-    Game.showMessage("You DIED. Press R to try again.");
-    return;
-  }
-
-  if (Player.hasWon()) {
-    Game.mode = "won";
-    var nextLevel = Game.levelNumber + 1;
-    
-    // Check if there's a next level
-    if (nextLevel < Level.levels.length) {
-      Game.showMessage("Level Complete! Press N for next level, or R to retry.");
-    } else {
-      Game.showMessage("You beat all levels! Press N for level 1, or R to retry.");
-    }
-    return;
-  }
+  return squares;
 };
 
-// --- THE LOOP ITSELF --------------------------------------------------
-Game.loop = function () {
-  Game.update();
-  Draw.updateCamera();
-  Draw.everything();
-  window.requestAnimationFrame(Game.loop);
+Collide.hitsSolid = function (x, y, width, height) {
+  var squares = Collide.squaresUnder(x, y, width, height);
+  for (var i = 0; i < squares.length; i++) {
+    if (Level.isSolid(squares[i].col, squares[i].row)) { return true; }
+  }
+  return false;
+};
+
+Collide.hitsSpike = function (x, y, width, height) {
+  var squares = Collide.squaresUnder(x, y, width, height);
+  for (var i = 0; i < squares.length; i++) {
+    if (Level.isSpike(squares[i].col, squares[i].row)) { return true; }
+  }
+  return false;
+};
+
+Collide.hitsFinish = function (x, y, width, height) {
+  var squares = Collide.squaresUnder(x, y, width, height);
+  for (var i = 0; i < squares.length; i++) {
+    if (Level.isFinish(squares[i].col, squares[i].row)) { return true; }
+  }
+  return false;
+};
+
+Collide.overlaps = function (a, b) {
+  return a.x < b.x + b.width &&
+         a.x + a.width > b.x &&
+         a.y < b.y + b.height &&
+         a.y + a.height > b.y;
 };

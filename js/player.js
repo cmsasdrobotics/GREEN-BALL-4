@@ -1,98 +1,144 @@
 /* =====================================================================
-   player.js  --  THE ROLLING CIRCLE.
+   level.js  --  BUILDING THE WORLD OUT OF PIECES.
 
-   This file owns everything about the player: where it is, how fast it
-   is going, and what happens when it hits something.
-
-   It does NOT draw anything. Drawing lives in js/draw.js.
+   A level is a list of piece names. A piece is a little 8-wide,
+   10-tall picture. This file glues the pictures together, left to
+   right, into one big grid.
    ===================================================================== */
 
-var Player = {
-  x: 0,            // position in pixels, left edge of the box
-  y: 0,            // position in pixels, top edge of the box
-  vx: 0,           // speed left and right
-  vy: 0,           // speed up and down
-  onGround: false, // is the player standing on something right now?
-  angle: 0         // how far the circle has rolled, for drawing the dot
+var Level = {
+  pieces: null,
+  levels: null,
+  grid: [],
+  cols: 0,
+  name: "",
+  startX: 0,
+  startY: 0,
+  ammoPickups: [],
+  enemies: [],
+  pellets: []
 };
 
-// Put the player back at the level's S square.
-Player.reset = function () {
-  Player.x = Level.startX;
-  Player.y = Level.startY;
-  Player.vx = 0;
-  Player.vy = 0;
-  CONFIG.MOVE_SPEED = 0;
-  Player.onGround = false;
-  Player.angle = 0;
+Level.loadData = function (whenDone) {
+  fetch("data/pieces.json")
+    .then(function (r) {
+      if (!r.ok) { throw new Error("Could not load data/pieces.json"); }
+      return r.json();
+    })
+    .then(function (piecesFile) {
+      Level.pieces = piecesFile;
+      return fetch("data/levels.json");
+    })
+    .then(function (r) {
+      if (!r.ok) { throw new Error("Could not load data/levels.json"); }
+      return r.json();
+    })
+    .then(function (levelsFile) {
+      Level.levels = levelsFile.levels;
+      whenDone();
+    })
+    .catch(function (error) {
+      document.getElementById("message").textContent =
+        "Could not load the level files. Check data/pieces.json and data/levels.json.";
+      console.error(error);
+    });
 };
 
-// Run one frame of player movement.
-Player.update = function () {
-  var size = CONFIG.PLAYER_SIZE;
+Level.build = function (levelNumber) {
+  var level = Level.levels[levelNumber];
+  Level.name = level.name;
+  Level.grid = [];
+  Level.cols = level.pieces.length * CONFIG.PIECE_COLS;
 
-  // --- 1. decide how fast to go sideways ------------------------------
-  if (Input.left)  { CONFIG.MOVE_SPEED = CONFIG.MOVE_SPEED - CONFIG.MOVE_VELOCITY; 
-  } else if (Input.right) { CONFIG.MOVE_SPEED = CONFIG.MOVE_SPEED + CONFIG.MOVE_VELOCITY; 
-  } else { CONFIG.MOVE_SPEED = CONFIG.MOVE_SPEED * CONFIG.MOVE_FRICTION; }
-  if (CONFIG.MOVE_SPEED > CONFIG.MAX_VELOCITY)  { CONFIG.MOVE_SPEED = CONFIG.MAX_VELOCITY; }
-  if (CONFIG.MOVE_SPEED < -CONFIG.MAX_VELOCITY)  { CONFIG.MOVE_SPEED = -CONFIG.MAX_VELOCITY; }
-  Player.vx = CONFIG.MOVE_SPEED;
-
-  // --- 2. jump, but only if we are standing on something --------------
-  if (Input.jump && Player.onGround) {
-    Player.vy = -CONFIG.JUMP_POWER;   // negative is UP
-    Player.onGround = false;
+  for (var row = 0; row < CONFIG.ROWS; row++) {
+    Level.grid.push("");
   }
 
-  // --- 3. gravity pulls down every single frame -----------------------
-  Player.vy = Player.vy + CONFIG.GRAVITY;
-  if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
+  for (var p = 0; p < level.pieces.length; p++) {
+    var pieceName = level.pieces[p];
+    var piece = Level.pieces[pieceName];
 
-  // --- 4. move sideways, one pixel at a time, stopping at walls -------
-  var stepX = 0;
-  if (Player.vx > 0.4) { stepX = 1; }
-  if (Player.vx < -0.4) { stepX = -1; }
-
-  for (var i = 0; i < Math.abs(Player.vx); i++) {
-    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) {
-      CONFIG.MOVE_SPEED = 0;
-      break;
+    if (!piece) {
+      console.error("No piece named '" + pieceName + "' in data/pieces.json");
+      piece = Level.pieces["flat"];
     }
-    Player.x = Player.x + stepX;
-    Player.angle = Player.angle + stepX / CONFIG.PLAYER_RADIUS; // roll it
-  }
 
-  // --- 5. move up or down, one pixel at a time ------------------------
-  var stepY = 0;
-  if (Player.vy > 0) { stepY = 1; }
-  if (Player.vy < 0) { stepY = -1; }
-
-  Player.onGround = false;
-
-  for (var j = 0; j < Math.abs(Player.vy); j++) {
-    if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {
-      if (stepY > 0) { Player.onGround = true; }  // we landed on something
-      Player.vy = 0;
-      break;
+    for (var row = 0; row < CONFIG.ROWS; row++) {
+      Level.grid[row] = Level.grid[row] + piece[row];
     }
-    Player.y = Player.y + stepY;
   }
 
-  // --- 6. keep the player inside the left edge of the world -----------
-  if (Player.x < 0) { Player.x = 0; }
+  Level.resetEntities();
+  Level.findStart();
 };
 
-// Did the player just touch something deadly?
-Player.isDead = function () {
-  var size = CONFIG.PLAYER_SIZE;
-  if (Collide.hitsSpike(Player.x, Player.y, size, size)) { return true; }
-  if (Player.y > CONFIG.CANVAS_H + 200) { return true; }   // fell off the world
-  return false;
+Level.resetEntities = function () {
+  Level.ammoPickups = [];
+  Level.enemies = [];
+  Level.pellets = [];
+
+  for (var row = 0; row < CONFIG.ROWS; row++) {
+    for (var col = 0; col < Level.cols; col++) {
+      var tile = Level.charAt(col, row);
+
+      if (tile === "-") {
+        Level.ammoPickups.push({
+          x: col * CONFIG.TILE + 6,
+          y: row * CONFIG.TILE + 6,
+          width: 20,
+          height: 20,
+          active: true
+        });
+      }
+
+      if (tile === "1") {
+        Level.enemies.push({
+          x: col * CONFIG.TILE,
+          y: row * CONFIG.TILE,
+          width: CONFIG.TILE,
+          height: CONFIG.TILE,
+          alive: true
+        });
+      }
+    }
+  }
 };
 
-// Did the player just reach the finish?
-Player.hasWon = function () {
-  var size = CONFIG.PLAYER_SIZE;
-  return Collide.hitsFinish(Player.x, Player.y, size, size);
+Level.findStart = function () {
+  for (var row = 0; row < CONFIG.ROWS; row++) {
+    for (var col = 0; col < Level.cols; col++) {
+      if (Level.charAt(col, row) === "S") {
+        Level.startX = col * CONFIG.TILE;
+        Level.startY = row * CONFIG.TILE;
+        return;
+      }
+    }
+  }
+
+  Level.startX = 0;
+  Level.startY = 0;
+};
+
+Level.charAt = function (col, row) {
+  if (row < 0 || row >= CONFIG.ROWS) { return "."; }
+  if (col < 0 || col >= Level.cols) { return "."; }
+  return Level.grid[row].charAt(col);
+};
+
+Level.isSolid = function (col, row) {
+  var tile = Level.charAt(col, row);
+  return tile === "#" || tile === "D";
+};
+
+Level.isSpike = function (col, row) {
+  var tile = Level.charAt(col, row);
+  return tile === "^" || tile === "v";
+};
+
+Level.isFinish = function (col, row) {
+  return Level.charAt(col, row) === "F";
+};
+
+Level.pixelWidth = function () {
+  return Level.cols * CONFIG.TILE;
 };
