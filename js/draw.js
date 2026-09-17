@@ -83,6 +83,22 @@ Draw.world = function () {
       if (tile === "F") { Draw.finish(x, y, size); }
     }
   }
+
+  // Draw the virtual right-edge barrier. It is not part of any piece.
+  Draw.endBarrier(Level.pixelWidth(), 0, size);
+};
+
+Draw.endBarrier = function (x, y, size) {
+  var ctx = Draw.ctx;
+  var height = CONFIG.ROWS * size;
+  ctx.fillStyle = "#9b633d";
+  ctx.fillRect(x, y, size, height);
+  ctx.fillStyle = "#55b947";
+  ctx.fillRect(x, y, 8, height);
+  ctx.strokeStyle = "#4b3427";
+  ctx.lineWidth = CONFIG.LINE_WIDTH;
+  ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
+                 size - CONFIG.LINE_WIDTH, height - CONFIG.LINE_WIDTH);
 };
 
 Draw.collectibles = function () {
@@ -119,8 +135,7 @@ Draw.enemies = function () {
   for (var i = 0; i < Level.enemies.length; i++) {
     var enemy = Level.enemies[i];
     if (enemy.alive) {
-      var bob = Math.sin(Date.now() / 220 + enemy.x) * 1.5;
-      Draw.enemy(enemy.x, enemy.y + bob, enemy.width, enemy.height);
+      Draw.enemy(enemy.x, enemy.y, enemy.width, enemy.height);
     }
   }
 };
@@ -132,8 +147,6 @@ Draw.enemy = function (x, y, width, height) {
   ctx.lineWidth = 3;
   ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   ctx.strokeRect(x + 2, y + 2, width - 4, height - 4);
-
-  // The enemy's eyes are black dots, matching the player's eyes.
   ctx.fillStyle = "#000000";
   ctx.beginPath();
   ctx.arc(x + width * 0.32, y + height * 0.34, 3, 0, Math.PI * 2);
@@ -250,7 +263,6 @@ Draw.player = function () {
   ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
-  // Player eyes are black dots only.
   ctx.fillStyle = "#000000";
   ctx.beginPath();
   ctx.arc(-6, -4, 2.5, 0, Math.PI * 2);
