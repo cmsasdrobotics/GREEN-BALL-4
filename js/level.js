@@ -98,7 +98,7 @@ Level.resetEntities = function () {
           direction: -1,
           speed: 1,
           vy: 0,
-          hopPower: 9,
+          hopPower: tile === "2" ? CONFIG.ENEMY2_HOP_POWER : 9,
           onGround: false,
           chunkLeft: chunk * CONFIG.PIECE_COLS * CONFIG.TILE,
           chunkRight: (chunk + 1) * CONFIG.PIECE_COLS * CONFIG.TILE,
