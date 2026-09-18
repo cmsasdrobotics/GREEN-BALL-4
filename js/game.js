@@ -53,14 +53,12 @@ Game.updateEnemies = function () {
       enemy.x = nextX;
     }
 
-    // Type 2 is a blue hopper. It keeps the same horizontal patrol but
-    // repeatedly jumps while it is standing on solid ground.
     if (enemy.type === 2) {
       enemy.vy += CONFIG.GRAVITY;
       if (enemy.vy > CONFIG.MAX_FALL) { enemy.vy = CONFIG.MAX_FALL; }
 
       if (enemy.onGround) {
-        enemy.vy = -enemy.hopPower;
+        enemy.vy = -(enemy.hopPower + 2);
         enemy.onGround = false;
       }
 
@@ -77,8 +75,6 @@ Game.updateEnemies = function () {
   }
 };
 
-// A blue hopper can be defeated by landing on its top. Other enemies,
-// including the spiked red enemy, remain dangerous on every side.
 Game.handleEnemyCollisions = function (previousPlayerY) {
   var player = {
     x: Player.x,
@@ -99,7 +95,7 @@ Game.handleEnemyCollisions = function (previousPlayerY) {
     if (wasAbove && isLanding && overlapsHorizontally) {
       enemy.alive = false;
       Player.y = enemy.y - player.height;
-      Player.vy = -CONFIG.JUMP_POWER * 0.6;
+      Player.vy = -(CONFIG.JUMP_POWER + 4);
       Player.onGround = false;
     }
   }
@@ -139,8 +135,6 @@ Game.update = function () {
     var pellet = Level.pellets[p];
     pellet.x = pellet.x + pellet.vx;
 
-    // Pellets disappear when they hit any solid block, including the
-    // invisible barriers at the left and right edges of the level.
     if (Collide.hitsSolid(pellet.x, pellet.y, pellet.width, pellet.height)) {
       Level.pellets.splice(p, 1);
       continue;
