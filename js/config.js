@@ -26,6 +26,10 @@ var CONFIG = {
   GRAVITY: 0.5,       // how hard the world pulls DOWN. bigger = heavier
   MAX_FALL: 16,       // fastest the player is allowed to fall
 
+  // --- enemies --------------------------------------------------------
+  ENEMY2_HOP_POWER: 14,   // enemy 2's hop is higher than the other enemies
+  STOMP_BOUNCE_POWER: 9,  // player bounce after stomping an enemy
+
   // --- the player's size ----------------------------------------------
   PLAYER_SIZE: 32,    // the player collides as a 32x32 box
   PLAYER_RADIUS: 16,  // ...but is DRAWN as a circle this big
