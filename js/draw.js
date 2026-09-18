@@ -83,8 +83,6 @@ Draw.world = function () {
       if (tile === "F") { Draw.finish(x, y, size); }
     }
   }
-
-  // Draw the virtual right-edge barrier. It is not part of any piece.
   Draw.endBarrier(Level.pixelWidth(), 0, size);
 };
 
@@ -135,31 +133,18 @@ Draw.enemies = function () {
   for (var i = 0; i < Level.enemies.length; i++) {
     var enemy = Level.enemies[i];
     if (enemy.alive) {
-      Draw.enemy(enemy.x, enemy.y, enemy.width, enemy.height);
+      Draw.enemy(enemy.x, enemy.y, enemy.width, enemy.height, enemy.type);
     }
   }
 };
 
-Draw.enemy = function (x, y, width, height) {
+Draw.enemy = function (x, y, width, height, type) {
   var ctx = Draw.ctx;
-  var spikeWidth = width * (2 / 3);
-  var spikeHeight = height * (1 / 3);
-  var spikeLeft = x + (width - spikeWidth) / 2;
+  var isHopper = type === 2;
 
-  // The spike sits on the enemy's head to show it cannot be squished.
-  ctx.fillStyle = "#b9bec5";
-  ctx.strokeStyle = "#6a7079";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(spikeLeft, y + 3);
-  ctx.lineTo(x + width / 2, y - spikeHeight);
-  ctx.lineTo(spikeLeft + spikeWidth, y + 3);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#d93434";
-  ctx.strokeStyle = "#741c2a";
+  // The hopper is a blue box and has no head spike, so it can be stomped.
+  ctx.fillStyle = isHopper ? "#3689e8" : "#d93434";
+  ctx.strokeStyle = isHopper ? "#174f9c" : "#741c2a";
   ctx.lineWidth = 3;
   ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   ctx.strokeRect(x + 2, y + 2, width - 4, height - 4);
