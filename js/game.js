@@ -77,6 +77,34 @@ Game.updateEnemies = function () {
   }
 };
 
+// A blue hopper can be defeated by landing on its top. Other enemies,
+// including the spiked red enemy, remain dangerous on every side.
+Game.handleEnemyCollisions = function (previousPlayerY) {
+  var player = {
+    x: Player.x,
+    y: Player.y,
+    width: CONFIG.PLAYER_SIZE,
+    height: CONFIG.PLAYER_SIZE
+  };
+
+  for (var i = 0; i < Level.enemies.length; i++) {
+    var enemy = Level.enemies[i];
+    if (!enemy.alive || enemy.type !== 2) { continue; }
+
+    var wasAbove = previousPlayerY + player.height <= enemy.y;
+    var isLanding = player.y + player.height >= enemy.y && Player.vy >= 0;
+    var overlapsHorizontally = player.x < enemy.x + enemy.width &&
+      player.x + player.width > enemy.x;
+
+    if (wasAbove && isLanding && overlapsHorizontally) {
+      enemy.alive = false;
+      Player.y = enemy.y - player.height;
+      Player.vy = -CONFIG.JUMP_POWER * 0.6;
+      Player.onGround = false;
+    }
+  }
+};
+
 Game.update = function () {
   if (Input.restart) {
     Game.startLevel(Game.levelNumber);
@@ -91,8 +119,10 @@ Game.update = function () {
 
   if (Game.mode !== "playing") { return; }
 
+  var previousPlayerY = Player.y;
   Player.update();
   Game.updateEnemies();
+  Game.handleEnemyCollisions(previousPlayerY);
 
   for (var i = 0; i < Level.ammoPickups.length; i++) {
     var pickup = Level.ammoPickups[i];
