@@ -40,7 +40,23 @@
         "spikedplatform",
         "powerup",
         "tallspikes",
-        "enemy",
+        "enemy1",
+        "finish"
+      ]
+    },
+    {
+      "name": "Level 4 - Hop Hop",
+      "pieces": [
+        "start",
+        "step",
+        "ledge",
+        "fallandbounce",
+        "floatingplatform",
+        "powerup",
+        "stairs",
+        "enemy1",
+        "platform",
+        "enemy2",
         "finish"
       ]
     }
