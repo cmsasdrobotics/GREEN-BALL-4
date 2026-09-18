@@ -49,10 +49,31 @@ Game.updateEnemies = function () {
 
     if (blocked) {
       enemy.direction = -enemy.direction;
-      continue;
+    } else {
+      enemy.x = nextX;
     }
 
-    enemy.x = nextX;
+    // Type 2 is a blue hopper. It keeps the same horizontal patrol but
+    // repeatedly jumps while it is standing on solid ground.
+    if (enemy.type === 2) {
+      enemy.vy += CONFIG.GRAVITY;
+      if (enemy.vy > CONFIG.MAX_FALL) { enemy.vy = CONFIG.MAX_FALL; }
+
+      if (enemy.onGround) {
+        enemy.vy = -enemy.hopPower;
+        enemy.onGround = false;
+      }
+
+      var stepY = enemy.vy > 0 ? 1 : (enemy.vy < 0 ? -1 : 0);
+      for (var j = 0; j < Math.abs(enemy.vy); j++) {
+        if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {
+          if (stepY > 0) { enemy.onGround = true; }
+          enemy.vy = 0;
+          break;
+        }
+        enemy.y += stepY;
+      }
+    }
   }
 };
 
