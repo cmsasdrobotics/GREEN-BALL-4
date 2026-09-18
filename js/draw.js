@@ -142,7 +142,22 @@ Draw.enemy = function (x, y, width, height, type) {
   var ctx = Draw.ctx;
   var isHopper = type === 2;
 
-  // The hopper is a blue box and has no head spike, so it can be stomped.
+  if (!isHopper) {
+    var spikeWidth = width * (2 / 3);
+    var spikeHeight = height * (1 / 3);
+    var spikeLeft = x + (width - spikeWidth) / 2;
+    ctx.fillStyle = "#b9bec5";
+    ctx.strokeStyle = "#6a7079";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(spikeLeft, y + 3);
+    ctx.lineTo(x + width / 2, y - spikeHeight);
+    ctx.lineTo(spikeLeft + spikeWidth, y + 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
   ctx.fillStyle = isHopper ? "#3689e8" : "#d93434";
   ctx.strokeStyle = isHopper ? "#174f9c" : "#741c2a";
   ctx.lineWidth = 3;
