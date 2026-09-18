@@ -19,7 +19,6 @@ var Level = {
   pellets: []
 };
 
-// Read both JSON files before starting the game.
 Level.loadData = function (whenDone) {
   fetch("data/pieces.json")
     .then(function (r) {
@@ -51,19 +50,15 @@ Level.build = function (levelNumber) {
   Level.grid = [];
   Level.cols = level.pieces.length * CONFIG.PIECE_COLS;
 
-  for (var row = 0; row < CONFIG.ROWS; row++) {
-    Level.grid.push("");
-  }
+  for (var row = 0; row < CONFIG.ROWS; row++) { Level.grid.push(""); }
 
   for (var p = 0; p < level.pieces.length; p++) {
     var pieceName = level.pieces[p];
     var piece = Level.pieces[pieceName];
-
     if (!piece) {
       console.error("No piece named '" + pieceName + "' in data/pieces.json");
       piece = Level.pieces["flat"];
     }
-
     for (var row = 0; row < CONFIG.ROWS; row++) {
       Level.grid[row] = Level.grid[row] + piece[row];
     }
@@ -92,15 +87,19 @@ Level.resetEntities = function () {
         });
       }
 
-      if (tile === "1") {
+      if (tile === "1" || tile === "2") {
         var chunk = Math.floor(col / CONFIG.PIECE_COLS);
         Level.enemies.push({
+          type: tile === "2" ? 2 : 1,
           x: col * CONFIG.TILE,
           y: row * CONFIG.TILE,
           width: CONFIG.TILE,
           height: CONFIG.TILE,
           direction: -1,
           speed: 1,
+          vy: 0,
+          hopPower: 9,
+          onGround: false,
           chunkLeft: chunk * CONFIG.PIECE_COLS * CONFIG.TILE,
           chunkRight: (chunk + 1) * CONFIG.PIECE_COLS * CONFIG.TILE,
           alive: true
@@ -120,7 +119,6 @@ Level.findStart = function () {
       }
     }
   }
-
   Level.startX = 0;
   Level.startY = 0;
 };
@@ -131,13 +129,9 @@ Level.charAt = function (col, row) {
   return Level.grid[row].charAt(col);
 };
 
-// Both level edges act like solid walls. Player.update() already clears
-// horizontal momentum whenever it collides with a solid tile, so touching
-// the starting wall now stops the player instead of leaving speed behind.
 Level.isSolid = function (col, row) {
   if (col < 0 && row >= 0 && row < CONFIG.ROWS) { return true; }
   if (col === Level.cols && row >= 0 && row < CONFIG.ROWS) { return true; }
-
   var tile = Level.charAt(col, row);
   return tile === "#" || tile === "D";
 };
