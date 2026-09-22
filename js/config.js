@@ -30,6 +30,9 @@ var CONFIG = {
   ENEMY2_HOP_POWER: 10,   // enemy 2's hop is higher than the other enemies
   STOMP_BOUNCE_POWER: 5,  // player bounce after stomping an enemy
 
+  // --- obstacles ------------------------------------------------------
+  BOUNCE_POWER: 17,   // launch speed off a bounce block (normal jump is 13)  
+
   // --- the player's size ----------------------------------------------
   PLAYER_SIZE: 32,    // the player collides as a 32x32 box
   PLAYER_RADIUS: 16,  // ...but is DRAWN as a circle this big
