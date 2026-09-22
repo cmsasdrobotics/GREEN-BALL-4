@@ -38,6 +38,16 @@ Collide.hitsSpike = function (x, y, width, height) {
   return false;
 };
 
+Collide.hitsBounce = function (x, y, width, height) {  
+  var squares = Collide.squaresUnder(x, y, width, height);  
+  for (var i = 0; i < squares.length; i++) {  
+    if (Level.isBounce(squares[i].col, squares[i].row)) {  
+      return true;  
+    }  
+  }  
+  return false;  
+};
+
 Collide.hitsFinish = function (x, y, width, height) {
   var squares = Collide.squaresUnder(x, y, width, height);
   for (var i = 0; i < squares.length; i++) {
