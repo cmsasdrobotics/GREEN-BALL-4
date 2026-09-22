@@ -66,11 +66,17 @@ Player.update = function () {
   var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0);
   Player.onGround = false;
   for (var j = 0; j < Math.abs(Player.vy); j++) {
-    if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {
-      if (stepY > 0) { Player.onGround = true; }
-      Player.vy = 0;
-      break;
-    }
+    if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {  
+      // bounce blocks launch you instead of letting you stand  
+      if (stepY > 0 && Collide.hitsBounce(Player.x, Player.y + size, size, 2)) {  
+        Player.vy = -CONFIG.BOUNCE_POWER;  
+      } else {  
+        if (stepY > 0) { Player.onGround = true; }  
+        Player.vy = 0;  
+      }  
+      break;  
+    }  
+
     Player.y += stepY;
   }
 
