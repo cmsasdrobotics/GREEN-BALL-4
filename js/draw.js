@@ -251,6 +251,24 @@ Draw.spikeDown = function (x, y, size) {
   ctx.stroke();
 };
 
+Draw.bounceBlock = function (x, y, size) {  
+  var ctx = Draw.ctx;  
+  ctx.fillStyle = "#3689e8";  
+  ctx.fillRect(x, y, size, size);  
+  ctx.strokeStyle = "#174f9c";  
+  ctx.lineWidth = CONFIG.LINE_WIDTH;  
+  ctx.strokeRect(x + 1.5, y + 1.5, size - 3, size - 3);  
+  // spring lines so players can tell it launches them  
+  ctx.strokeStyle = "#ffffff";  
+  ctx.lineWidth = 3;  
+  ctx.beginPath();  
+  ctx.moveTo(x + 8, y + size - 10);  
+  ctx.lineTo(x + size - 8, y + size - 10);  
+  ctx.moveTo(x + 8, y + size - 18);  
+  ctx.lineTo(x + size - 8, y + size - 18);  
+  ctx.stroke();  
+};  
+
 Draw.finish = function (x, y, size) {
   var ctx = Draw.ctx;
   ctx.fillStyle = "#5a3826";
