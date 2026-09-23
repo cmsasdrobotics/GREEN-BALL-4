@@ -78,6 +78,7 @@ Draw.world = function () {
       var y = row * size;
       if (tile === "#") { Draw.grassBlock(x, y, size); }
       if (tile === "D") { Draw.dirtBlock(x, y, size); }
+      if (tile === "B") { Draw.bounceBlock(x, y, size); }
       if (tile === "^") { Draw.spikeUp(x, y, size); }
       if (tile === "v") { Draw.spikeDown(x, y, size); }
       if (tile === "F") { Draw.finish(x, y, size); }
