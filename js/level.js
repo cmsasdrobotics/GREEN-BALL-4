@@ -133,11 +133,11 @@ Level.isSolid = function (col, row) {
   if (col < 0 && row >= 0 && row < CONFIG.ROWS) { return true; }  
   if (col === Level.cols && row >= 0 && row < CONFIG.ROWS) { return true; }  
   var tile = Level.charAt(col, row);  
-  return tile === "#" || tile === "D" || tile === "B";  
+  return tile === "#" || tile === "D";  
 };
 
 Level.isBounce = function (col, row) {  
-  return Level.charAt(col, row) === "B";  
+  return tile === "B";  
 };  
 
 Level.isSpike = function (col, row) {
