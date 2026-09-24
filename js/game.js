@@ -70,21 +70,14 @@ Game.updateEnemies = function () {
 
       var stepY = enemy.vy > 0 ? 1 : (enemy.vy < 0 ? -1 : 0);
       for (var j = 0; j < Math.abs(enemy.vy); j++) {
-        if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {
-          if (stepY > 0) { enemy.onGround = true; }
-          enemy.vy = 0;
-          break;
-        }
-        enemy.y += stepY;
-      }
-      if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {  
-        if (stepY > 0) {  
-          enemy.onGround = true;  
-          enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+        if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {  
+          if (stepY > 0) {  
+            enemy.onGround = true;  
+            enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+          }  
+          enemy.vy = 0;  
+          break;  
         }  
-        enemy.vy = 0;  
-        break;  
-      }  
     }
   }
 };
