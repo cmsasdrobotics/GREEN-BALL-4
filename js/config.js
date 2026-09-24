@@ -29,6 +29,7 @@ var CONFIG = {
   // --- enemies --------------------------------------------------------
   ENEMY2_HOP_POWER: 10,   // enemy 2's hop is higher than the other enemies
   STOMP_BOUNCE_POWER: 5,  // player bounce after stomping an enemy
+  ENEMY2_HOP_PAUSE: 45,   // frames the hopper walks between hops (60 = 1 second)  
 
   // --- obstacles ------------------------------------------------------
   BOUNCE_POWER: 17,   // launch speed off a bounce block (normal jump is 13)  
