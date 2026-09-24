@@ -77,9 +77,13 @@ Game.updateEnemies = function () {
         }
         enemy.y += stepY;
       }
-      if (stepY > 0) {  
-        enemy.onGround = true;  
-        enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+      if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {  
+        if (stepY > 0) {  
+          enemy.onGround = true;  
+          enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+        }  
+        enemy.vy = 0;  
+        break;  
       }  
     }
   }
