@@ -57,10 +57,17 @@ Game.updateEnemies = function () {
       enemy.vy += CONFIG.GRAVITY;
       if (enemy.vy > CONFIG.MAX_FALL) { enemy.vy = CONFIG.MAX_FALL; }
 
-      if (enemy.onGround) {
-        enemy.vy = -(enemy.hopPower + 2);
-        enemy.onGround = false;
-      }
+      if (enemy.onGround) {  
+        // walk for a while before hopping again  
+        if (enemy.hopCooldown <= 0) {  
+          enemy.vy = -(enemy.hopPower + 2);  
+          enemy.onGround = false;  
+          enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+        } else {  
+          enemy.hopCooldown--;  
+        }  
+      }  
+
 
       var stepY = enemy.vy > 0 ? 1 : (enemy.vy < 0 ? -1 : 0);
       for (var j = 0; j < Math.abs(enemy.vy); j++) {
