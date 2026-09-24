@@ -77,6 +77,10 @@ Game.updateEnemies = function () {
         }
         enemy.y += stepY;
       }
+      if (stepY > 0) {  
+        enemy.onGround = true;  
+        enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
+      }  
     }
   }
 };
