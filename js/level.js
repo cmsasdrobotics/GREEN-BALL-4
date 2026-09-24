@@ -71,9 +71,7 @@ Level.build = function (levelNumber) {
 Level.resetEntities = function () {
   Level.ammoPickups = [];
   Level.enemies = [];
-  Level.pellets = [];
-  hopCooldown: 0,  
-  
+  Level.pellets = [];  
 
   for (var row = 0; row < CONFIG.ROWS; row++) {
     for (var col = 0; col < Level.cols; col++) {
