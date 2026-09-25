@@ -78,6 +78,9 @@ Game.updateEnemies = function () {
           enemy.vy = 0;  
           break;  
         }  
+
+        enemy.y += stepY;
+      }
     }
   }
 };
