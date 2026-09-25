@@ -73,7 +73,6 @@ Game.updateEnemies = function () {
         if (Collide.hitsSolid(enemy.x, enemy.y + stepY, enemy.width, enemy.height)) {  
           if (stepY > 0) {  
             enemy.onGround = true;  
-            enemy.hopCooldown = CONFIG.ENEMY2_HOP_PAUSE;  
           }  
           enemy.vy = 0;  
           break;  
