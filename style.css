@@ -33,3 +33,10 @@ canvas {
 .controls {
   font-size: 13px;
 }
+
+#ammo {
+  font-size: 16px;
+  color: #ffd447;
+  height: 20px;
+  margin-top: 4px;
+}

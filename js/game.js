@@ -13,10 +13,22 @@ Game.startLevel = function (levelNumber) {
   Player.reset();
   Game.mode = "playing";
   Game.showMessage("");
+  Game.updateAmmoDisplay();
 };
 
 Game.showMessage = function (text) {
   document.getElementById("message").textContent = text;
+};
+
+// The ammo counter only shows up starting on Level 3 (index 2), since
+// that's the first level with a powerup and an enemy to shoot.
+Game.updateAmmoDisplay = function () {
+  var ammoEl = document.getElementById("ammo");
+  if (Game.levelNumber >= 2) {
+    ammoEl.textContent = "Ammo: " + Player.ammo;
+  } else {
+    ammoEl.textContent = "";
+  }
 };
 
 // Enemies patrol only inside the chunk where they were placed. They turn
@@ -181,6 +193,7 @@ Game.update = function () {
 
 Game.loop = function () {
   Game.update();
+  Game.updateAmmoDisplay();
   Draw.updateCamera();
   Draw.everything();
   window.requestAnimationFrame(Game.loop);
