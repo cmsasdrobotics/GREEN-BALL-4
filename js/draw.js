@@ -207,13 +207,37 @@ Draw.roundedRect = function (ctx, x, y, width, height, radius) {
 // (from Level.SLOPES) -- a 45-degree tile is a plain triangle, a 22.5ish
 // tread is a trapezoid, and a flat placeholder (equal left/right) comes
 // out as a short block. Physics and drawing always match because they
-// both read the same table.
+// both read the same table. Styled to match the flat grass/dirt blocks:
+// a solid dirt body with a grass cap band along the top.
 Draw.slope = function (x, y, size, shape) {
   var ctx = Draw.ctx;
   var leftY = y + size - shape.left * size;
   var rightY = y + size - shape.right * size;
+  var capThickness = 8; // same thickness as the flat blocks' grass strip
+
+  // the cap band tapers to nothing at a corner that's fully open, instead
+  // of poking out past the bottom of the tile
+  var leftCapY = Math.min(leftY + capThickness, y + size);
+  var rightCapY = Math.min(rightY + capThickness, y + size);
 
   ctx.fillStyle = "#9b633d";
+  ctx.beginPath();
+  ctx.moveTo(x, y + size);
+  ctx.lineTo(x, leftY);
+  ctx.lineTo(x + size, rightY);
+  ctx.lineTo(x + size, y + size);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#55b947";
+  ctx.beginPath();
+  ctx.moveTo(x, leftY);
+  ctx.lineTo(x + size, rightY);
+  ctx.lineTo(x + size, rightCapY);
+  ctx.lineTo(x, leftCapY);
+  ctx.closePath();
+  ctx.fill();
+
   ctx.strokeStyle = "#4b3427";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.beginPath();
@@ -222,15 +246,6 @@ Draw.slope = function (x, y, size, shape) {
   ctx.lineTo(x + size, rightY);
   ctx.lineTo(x + size, y + size);
   ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  // a grass cap along the slanted top edge, to match the flat blocks
-  ctx.strokeStyle = "#55b947";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(x, leftY);
-  ctx.lineTo(x + size, rightY);
   ctx.stroke();
 };
 

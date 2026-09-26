@@ -169,10 +169,19 @@ Level.SLOPES = {
   "E":  { left: 0.5,  right: 1    }, // 22.5ish, rising right - upper half
   "r":  { left: 0.5,  right: 0    }, // 22.5ish, rising left - upper half
   "R":  { left: 1,    right: 0.5  }, // 22.5ish, rising left - lower half
-  "q":  { left: 0.35, right: 0.35 }, // placeholder: short flat ledge
-  "Q":  { left: 0.85, right: 0.85 }, // placeholder: tall flat ledge
-  "w":  { left: 0.35, right: 0.35 }, // placeholder: short flat ledge
-  "W":  { left: 0.85, right: 0.85 }  // placeholder: tall flat ledge
+  // NOTE: q/Q/w/W (the tall 1-wide corner pieces) are a best-guess for now.
+  // A single-column tile can't lean sideways the way the values above are
+  // set up (there's no left/right to interpolate across), so instead of a
+  // true diagonal, these give a two-step taper: the small piece is a quarter
+  // solid, the big piece three-quarters, so together they round off a
+  // corner in two steps instead of one abrupt drop. If that's not the look
+  // or feel you're after, tell me what you pictured and I'll rebuild this
+  // properly (it likely needs a different, row-based model rather than
+  // this left/right one).
+  "q":  { left: 0.25, right: 0.25 },
+  "Q":  { left: 0.75, right: 0.75 },
+  "w":  { left: 0.25, right: 0.25 },
+  "W":  { left: 0.75, right: 0.75 }
 };
 
 // The exact pixel Y of the ground surface at world x-position `x`, for
