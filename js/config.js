@@ -34,6 +34,11 @@ var CONFIG = {
   // --- obstacles ------------------------------------------------------
   BOUNCE_POWER: 17,   // launch speed off a bounce block (normal jump is 13)  
 
+  // --- slopes -----------------------------------------------------------
+  SLOPE_SNAP: 6,             // pixels of "stickiness" for following a slope down
+  SLOPE_LAUNCH_FACTOR: 1,    // how much of your speed on an upward slope becomes launch
+  SLOPE_LAUNCH_MIN_SPEED: 4, // you need at least this much speed to launch off a slope
+
   // --- the player's size ----------------------------------------------
   PLAYER_SIZE: 32,    // the player collides as a 32x32 box
   PLAYER_RADIUS: 16,  // ...but is DRAWN as a circle this big

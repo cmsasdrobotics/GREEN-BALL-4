@@ -8,6 +8,8 @@ var Player = {
   vx: 0,
   vy: 0,
   onGround: false,
+  onSlope: false,
+  slopeGradient: 0,
   angle: 0,
   ammo: 0,
   facing: 1,
@@ -21,6 +23,8 @@ Player.reset = function () {
   Player.vy = 0;
   CONFIG.MOVE_SPEED = 0;
   Player.onGround = false;
+  Player.onSlope = false;
+  Player.slopeGradient = 0;
   Player.angle = 0;
   // ammo is NOT reset here on purpose -- it carries over between levels
   Player.facing = 1;
@@ -63,21 +67,57 @@ Player.update = function () {
     Player.angle += stepX / CONFIG.PLAYER_RADIUS;
   }
 
-  var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0);
+  var wasOnSlope = Player.onSlope;
+  var gradientBeforeMove = Player.slopeGradient;
   Player.onGround = false;
-  for (var j = 0; j < Math.abs(Player.vy); j++) {
-    if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {  
-      // bounce blocks launch you instead of letting you stand  
-      if (stepY > 0 && Collide.hitsBounce(Player.x, Player.y + size, size, 2)) {  
-        Player.vy = -CONFIG.BOUNCE_POWER;  
-      } else {  
-        if (stepY > 0) { Player.onGround = true; }  
-        Player.vy = 0;  
-      }  
-      break;  
-    }  
+  Player.onSlope = false;
 
-    Player.y += stepY;
+  // Slopes need a smooth surface instead of one grid square at a time, so
+  // check for one directly under the player's feet before falling back to
+  // the normal block-by-block collision below.
+  var slopeY = null;
+  if (Player.vy >= 0) {
+    var footX = Player.x + size / 2;
+    var footRow = Math.floor((Player.y + size) / CONFIG.TILE);
+    slopeY = Level.slopeSurfaceY(footX, footRow);
+    if (slopeY === null) { slopeY = Level.slopeSurfaceY(footX, footRow + 1); }
+  }
+
+  if (slopeY !== null && Player.y + size <= slopeY + CONFIG.SLOPE_SNAP) {
+    Player.y = slopeY - size;
+    Player.vy = 0;
+    Player.onGround = true;
+    Player.onSlope = true;
+    Player.slopeGradient = Level.slopeGradient(Player.x + size / 2,
+      Math.floor((Player.y + size) / CONFIG.TILE));
+  } else {
+    // Leaving the top of an upward slope with enough speed launches the
+    // player into the air, instead of just walking off it -- the faster
+    // you were rolling, the higher you fly.
+    if (wasOnSlope && Math.abs(CONFIG.MOVE_SPEED) >= CONFIG.SLOPE_LAUNCH_MIN_SPEED) {
+      var goingUphill = (gradientBeforeMove > 0 && CONFIG.MOVE_SPEED > 0) ||
+                         (gradientBeforeMove < 0 && CONFIG.MOVE_SPEED < 0);
+      if (goingUphill) {
+        var launchVy = -Math.abs(CONFIG.MOVE_SPEED) * Math.abs(gradientBeforeMove) * CONFIG.SLOPE_LAUNCH_FACTOR;
+        if (launchVy < Player.vy) { Player.vy = launchVy; }
+      }
+    }
+
+    var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0);
+    for (var j = 0; j < Math.abs(Player.vy); j++) {
+      if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {  
+        // bounce blocks launch you instead of letting you stand  
+        if (stepY > 0 && Collide.hitsBounce(Player.x, Player.y + size, size, 2)) {  
+          Player.vy = -CONFIG.BOUNCE_POWER;  
+        } else {  
+          if (stepY > 0) { Player.onGround = true; }  
+          Player.vy = 0;  
+        }  
+        break;  
+      }  
+
+      Player.y += stepY;
+    }
   }
 
   if (Player.x < 0) { Player.x = 0; }

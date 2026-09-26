@@ -82,6 +82,7 @@ Draw.world = function () {
       if (tile === "^") { Draw.spikeUp(x, y, size); }
       if (tile === "v") { Draw.spikeDown(x, y, size); }
       if (tile === "F") { Draw.finish(x, y, size); }
+      if (Level.SLOPES[tile]) { Draw.slope(x, y, size, Level.SLOPES[tile]); }
     }
   }
   Draw.endBarrier(Level.pixelWidth(), 0, size);
@@ -200,6 +201,37 @@ Draw.roundedRect = function (ctx, x, y, width, height, radius) {
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
+};
+
+// Draws whatever shape a slope tile's left/right height fractions describe
+// (from Level.SLOPES) -- a 45-degree tile is a plain triangle, a 22.5ish
+// tread is a trapezoid, and a flat placeholder (equal left/right) comes
+// out as a short block. Physics and drawing always match because they
+// both read the same table.
+Draw.slope = function (x, y, size, shape) {
+  var ctx = Draw.ctx;
+  var leftY = y + size - shape.left * size;
+  var rightY = y + size - shape.right * size;
+
+  ctx.fillStyle = "#9b633d";
+  ctx.strokeStyle = "#4b3427";
+  ctx.lineWidth = CONFIG.LINE_WIDTH;
+  ctx.beginPath();
+  ctx.moveTo(x, y + size);
+  ctx.lineTo(x, leftY);
+  ctx.lineTo(x + size, rightY);
+  ctx.lineTo(x + size, y + size);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // a grass cap along the slanted top edge, to match the flat blocks
+  ctx.strokeStyle = "#55b947";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(x, leftY);
+  ctx.lineTo(x + size, rightY);
+  ctx.stroke();
 };
 
 Draw.grassBlock = function (x, y, size) {
