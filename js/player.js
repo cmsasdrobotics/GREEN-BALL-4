@@ -22,7 +22,7 @@ Player.reset = function () {
   CONFIG.MOVE_SPEED = 0;
   Player.onGround = false;
   Player.angle = 0;
-  Player.ammo = 0;
+  // ammo is NOT reset here on purpose -- it carries over between levels
   Player.facing = 1;
   Player.shootCooldown = 0;
 };
