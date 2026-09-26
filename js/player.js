@@ -58,8 +58,13 @@ Player.update = function () {
   if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
 
   var stepX = Player.vx > 0.1 ? 1 : (Player.vx < -0.1 ? -1 : 0);
+  // While grounded, don't count solid ground right at foot level as a wall --
+  // otherwise climbing a slope/step trips the same check that stops you at
+  // a real wall, since your Y from last frame is briefly a bit "inside" the
+  // rising ground ahead until the vertical pass below corrects it.
+  var sideCheckHeight = Player.onGround ? size - CONFIG.GROUND_STEP_ALLOWANCE : size;
   for (var i = 0; i < Math.abs(Player.vx); i++) {
-    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) {
+    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, sideCheckHeight)) {
       CONFIG.MOVE_SPEED = 0;
       break;
     }
