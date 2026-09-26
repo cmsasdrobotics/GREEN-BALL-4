@@ -59,6 +59,17 @@
         "enemy2",
         "finish"
       ]
+    },
+    {
+      "name": "Level 5 - Slope Frenzy",
+      "pieces": [
+        "start",
+        "ramp",
+        "pit",
+        "ledge",
+        "downfall",
+        "finish"
+      ]
     }
   ]
 }
