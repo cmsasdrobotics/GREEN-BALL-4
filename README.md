@@ -1,19 +1,37 @@
-# ROLLER - the base game
+# GREEN BALL 4
 
-A circle with an off-center dot rolls through a black and white world.
-It can move, jump, land on platforms, and die on spikes. It wins by
-touching the flag.
+You have found yourself in an unusual place.
+All the land have great detail, nothing you have seen before.
+For once, you get to touch grass.
 
-That is the whole game. Everything else is yours to add.
+That is it, you finally get to live life as, ball. Or so you thought.
 
-## How to play it
+The squares have learned to use interplanetary travel, and have now invaded your planet.
+Your goal is to save the balls, before the squares uh, squarify everyone.
 
-Push your changes, then open your GitHub Pages link.
-Press `Ctrl + Shift + R` to hard refresh, or you will see the old version.
+## Controls
 
-- LEFT / RIGHT arrow - roll
-- SPACE or UP arrow - jump
-- R - restart the level
+- A / D (LEFT / RIGHT) arrow - Roll
+- W (SPACE or UP arrow) - Jump
+- R - Restart the Level
+- N - Next Level Once Beaten
+- Q / E - Shoot Left or Right, but get Ammo first
+
+## Enemies
+
+- Spike - Patrols left and right, but has a spike that would kill you if you tried to stomp them.
+- Hopper - Also patrols left and right, but jumps too, and you can stomp them.
+## Upcoming
+- Winged - Flies on an area and shoots pellets towards you.
+
+## Weapons
+- Pellets - Bullets that can be shot to the left and right,
+## Upcoming
+- Grenade Launcher - Shoots a rocket wherever aimed (aim with left and right arrows)
+  and space to shoot, rocket has gravity and splash damage, you can rocket jump.
+- Sniper - Use the mouse to aim and shoot, use your ammo wisely.
+
+# Files n Stuff
 
 ## Where everything lives
 
