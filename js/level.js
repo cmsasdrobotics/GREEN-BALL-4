@@ -134,9 +134,10 @@ Level.isSolid = function (col, row) {
   if (col < 0 && row >= 0 && row < CONFIG.ROWS) { return true; }  
   if (col === Level.cols && row >= 0 && row < CONFIG.ROWS) { return true; }  
   var tile = Level.charAt(col, row);  
+  // '_' is "ghost dirt" - draws as dirt but doesn't block collision
   return tile === "#" || tile === "D" || tile === "B";  
 };  
-  
+   
 Level.isBounce = function (col, row) {  
   var tile = Level.charAt(col, row);  
   return tile === "B";  
