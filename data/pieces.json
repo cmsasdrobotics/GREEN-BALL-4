@@ -1,5 +1,5 @@
 {
-  "_comment": "Every piece is 8 columns wide and 10 rows tall. Draw it like a picture. '.' is empty air, '#' is a solid block, '^' is an upward spike, 'v' is a downward spike, '-' is ammo, '1' is an enemy, 'S' is where the player starts, 'F' is the finish.",
+  "_comment": "Every piece is 8 columns wide and 10 rows tall. Draw it like a picture. '.' is empty air, '#' is a solid block, '^' is an upward spike, 'v' is a downward spike, '-' is ammo, '1' is an enemy type 1, '2' is an enemy type 2, 'B' is a bounce block, 'S' is the start, 'F' is the finish. Slopes: '/' rises right, '\\' rises left, 'e'/'E'/'r'/'R' are gentler 22.5 slopes.",
 
   "start": [
     "........",
@@ -47,9 +47,9 @@
     "........",
     "w......q",
     "W......Q",
-    "D\\..../D",
-    "DDRreEDD",
-    "DDDDDDDD",
+    "\\...../ ",
+    ".RreE...",
+    "########",
     "DDDDDDDD"
   ],
 
