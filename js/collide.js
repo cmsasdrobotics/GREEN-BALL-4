@@ -30,6 +30,29 @@ Collide.hitsSolid = function (x, y, width, height) {
   return false;
 };
 
+// Check if there's a slope surface below the player. Returns the Y position
+// of the slope surface, or null if no slope is found.
+Collide.findSlopeBelow = function (x, y, width, height) {
+  var footY = y + height;
+  var footX = x + width / 2;
+  
+  // Check the row directly below the feet
+  var footRow = Math.floor(footY / CONFIG.TILE);
+  var slopeY = Level.slopeSurfaceY(footX, footRow);
+  
+  if (slopeY !== null && footY <= slopeY + CONFIG.SLOPE_SNAP) {
+    return { y: slopeY, row: footRow };
+  }
+  
+  // If not close enough, check one more row below
+  slopeY = Level.slopeSurfaceY(footX, footRow + 1);
+  if (slopeY !== null && footY <= slopeY + CONFIG.SLOPE_SNAP) {
+    return { y: slopeY, row: footRow + 1 };
+  }
+  
+  return null;
+};
+
 Collide.hitsSpike = function (x, y, width, height) {
   var squares = Collide.squaresUnder(x, y, width, height);
   for (var i = 0; i < squares.length; i++) {
