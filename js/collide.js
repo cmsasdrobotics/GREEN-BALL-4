@@ -35,22 +35,36 @@ Collide.hitsSolid = function (x, y, width, height) {
 Collide.findSlopeBelow = function (x, y, width, height) {
   var footY = y + height;
   var footX = x + width / 2;
-  
+
   // Check the row directly below the feet
   var footRow = Math.floor(footY / CONFIG.TILE);
   var slopeY = Level.slopeSurfaceY(footX, footRow);
-  
+
   if (slopeY !== null && footY <= slopeY + CONFIG.SLOPE_SNAP) {
     return { y: slopeY, row: footRow };
   }
-  
+
   // If not close enough, check one more row below
   slopeY = Level.slopeSurfaceY(footX, footRow + 1);
   if (slopeY !== null && footY <= slopeY + CONFIG.SLOPE_SNAP) {
     return { y: slopeY, row: footRow + 1 };
   }
-  
+
   return null;
+};
+
+// True only if the player's bottom-center is buried below a slope surface.
+// A player standing on a slope is snapped exactly to the surface, so this
+// is false while standing and only triggers when actually embedded.
+// (Only the center is checked on purpose: the uphill corner of a standing
+// player is always below the surface and would block movement.)
+Collide.hitsSlope = function (x, y, width, height) {
+  var footX = x + width / 2;
+  var footY = y + height;
+  var row = Math.floor((footY - 1) / CONFIG.TILE);
+  var surfaceY = Level.slopeSurfaceY(footX, row);
+  if (surfaceY === null) { return false; }
+  return footY > surfaceY;
 };
 
 Collide.hitsSpike = function (x, y, width, height) {
@@ -61,14 +75,14 @@ Collide.hitsSpike = function (x, y, width, height) {
   return false;
 };
 
-Collide.hitsBounce = function (x, y, width, height) {  
-  var squares = Collide.squaresUnder(x, y, width, height);  
-  for (var i = 0; i < squares.length; i++) {  
-    if (Level.isBounce(squares[i].col, squares[i].row)) {  
-      return true;  
-    }  
-  }  
-  return false;  
+Collide.hitsBounce = function (x, y, width, height) {
+  var squares = Collide.squaresUnder(x, y, width, height);
+  for (var i = 0; i < squares.length; i++) {
+    if (Level.isBounce(squares[i].col, squares[i].row)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 Collide.hitsFinish = function (x, y, width, height) {
