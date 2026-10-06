@@ -31,8 +31,42 @@ Player.reset = function () {
   Player.shootCooldown = 0;
 };
 
+// Looks for a slope surface the player's feet should snap to.
+// Returns the surface Y, or null if there isn't one.
+//
+// It checks the row ABOVE the feet line as well as the rows at and below it.
+// That matters for two reasons:
+//   1. When you walk from flat ground onto the bottom of a slope, the slope
+//      tile sits in the row just above your feet. Without this check it is
+//      never seen, and now that the dirt under slopes is "ghost" (not solid)
+//      you would fall straight through.
+//   2. Only surfaces that are close to your feet count, so you don't get
+//      teleported down onto a slope that is a whole tile below you.
+Player.findSlope = function (wasGrounded) {
+  var size = CONFIG.PLAYER_SIZE;
+  var footX = Player.x + size / 2;
+  var feet = Player.y + size;
+  var baseRow = Math.floor(feet / CONFIG.TILE);
+
+  // how far BELOW my feet the surface may be and still catch me
+  // (falling fast = bigger reach; walking down a slope = "stickiness")
+  var reachDown = Math.max(Player.vy, wasGrounded ? CONFIG.SLOPE_SNAP : 0) + 1;
+  // how far my feet may already be sunk INTO the surface (climbing a slope)
+  var reachUp = CONFIG.SLOPE_SNAP + Math.abs(Player.vx);
+
+  for (var row = baseRow - 1; row <= baseRow + 1; row++) {
+    var surfaceY = Level.slopeSurfaceY(footX, row);
+    if (surfaceY === null) { continue; }
+    if (feet >= surfaceY - reachDown && feet <= surfaceY + reachUp) {
+      return surfaceY;
+    }
+  }
+  return null;
+};
+
 Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
+  var wasGrounded = Player.onGround;
 
   // Arrow keys move only. Q/E are reserved for shooting.
   if (Input.left) {
@@ -82,19 +116,16 @@ Player.update = function () {
   // the normal block-by-block collision below.
   var slopeY = null;
   if (Player.vy >= 0) {
-    var footX = Player.x + size / 2;
-    var footRow = Math.floor((Player.y + size) / CONFIG.TILE);
-    slopeY = Level.slopeSurfaceY(footX, footRow);
-    if (slopeY === null) { slopeY = Level.slopeSurfaceY(footX, footRow + 1); }
+    slopeY = Player.findSlope(wasGrounded);
   }
 
-  if (slopeY !== null && Player.y + size <= slopeY + CONFIG.SLOPE_SNAP) {
+  if (slopeY !== null) {
     Player.y = slopeY - size;
     Player.vy = 0;
     Player.onGround = true;
     Player.onSlope = true;
     Player.slopeGradient = Level.slopeGradient(Player.x + size / 2,
-      Math.floor((Player.y + size) / CONFIG.TILE));
+      Math.floor((Player.y + size - 1) / CONFIG.TILE));
   } else {
     // Leaving the top of an upward slope with enough speed launches the
     // player into the air, instead of just walking off it -- the faster
@@ -110,17 +141,17 @@ Player.update = function () {
 
     var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0);
     for (var j = 0; j < Math.abs(Player.vy); j++) {
-      if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size) || 
-          Collide.hitsSlope(Player.x, Player.y + stepY, size, size)) {  
-        // bounce blocks launch you instead of letting you stand  
-        if (stepY > 0 && Collide.hitsBounce(Player.x, Player.y + size, size, 2)) {  
-          Player.vy = -CONFIG.BOUNCE_POWER;  
-        } else {  
-          if (stepY > 0) { Player.onGround = true; }  
-          Player.vy = 0;  
-        }  
-        break;  
-      }  
+      if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size) ||
+          Collide.hitsSlope(Player.x, Player.y + stepY, size, size)) {
+        // bounce blocks launch you instead of letting you stand
+        if (stepY > 0 && Collide.hitsBounce(Player.x, Player.y + size, size, 2)) {
+          Player.vy = -CONFIG.BOUNCE_POWER;
+        } else {
+          if (stepY > 0) { Player.onGround = true; }
+          Player.vy = 0;
+        }
+        break;
+      }
 
       Player.y += stepY;
     }
