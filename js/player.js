@@ -52,7 +52,8 @@ Player.findSlope = function (wasGrounded) {
   // (falling fast = bigger reach; walking down a slope = "stickiness")
   var reachDown = Math.max(Player.vy, wasGrounded ? CONFIG.SLOPE_SNAP : 0) + 1;
   // how far my feet may already be sunk INTO the surface (climbing a slope)
-  var reachUp = CONFIG.SLOPE_SNAP + Math.abs(Player.vx);
+  // (tall slopes climb 2px per px of sideways movement, so allow for that)
+  var reachUp = CONFIG.SLOPE_SNAP + Math.abs(Player.vx) * 2;
 
   for (var row = baseRow - 1; row <= baseRow + 1; row++) {
     var surfaceY = Level.slopeSurfaceY(footX, row);

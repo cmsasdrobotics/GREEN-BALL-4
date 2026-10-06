@@ -5,7 +5,12 @@
 var Draw = {
   canvas: null,
   ctx: null,
-  cameraX: 0
+  cameraX: 0,
+
+  // Ghost dirt ("_") is drawn exactly like dirt so slopes look like they
+  // sit on solid ground. While building levels you can set this to a
+  // color like "rgba(255,255,255,0.18)" to see which blocks are ghosts.
+  GHOST_TINT: null
 };
 
 Draw.setup = function () {
@@ -67,24 +72,39 @@ Draw.cloud = function (x, y, scale) {
   ctx.restore();
 };
 
+// Two passes: first all the square blocks (including ghost dirt), then the
+// slopes on top, so a neighboring block can never paint over a slope's
+// outline.
 Draw.world = function () {
   var size = CONFIG.TILE;
   var firstCol = Math.floor(Draw.cameraX / size) - 1;
   var lastCol = firstCol + Math.ceil(CONFIG.CANVAS_W / size) + 2;
-  for (var row = 0; row < CONFIG.ROWS; row++) {
-    for (var col = firstCol; col <= lastCol; col++) {
-      var tile = Level.charAt(col, row);
-      var x = col * size;
-      var y = row * size;
+  var row, col, tile, x, y;
+
+  for (row = 0; row < CONFIG.ROWS; row++) {
+    for (col = firstCol; col <= lastCol; col++) {
+      tile = Level.charAt(col, row);
+      x = col * size;
+      y = row * size;
       if (tile === "#") { Draw.grassBlock(x, y, size); }
       if (tile === "D") { Draw.dirtBlock(x, y, size); }
+      if (tile === "_") { Draw.ghostBlock(x, y, size); }
       if (tile === "B") { Draw.bounceBlock(x, y, size); }
       if (tile === "^") { Draw.spikeUp(x, y, size); }
       if (tile === "v") { Draw.spikeDown(x, y, size); }
       if (tile === "F") { Draw.finish(x, y, size); }
-      if (Level.SLOPES[tile]) { Draw.slope(x, y, size, Level.SLOPES[tile]); }
     }
   }
+
+  for (row = 0; row < CONFIG.ROWS; row++) {
+    for (col = firstCol; col <= lastCol; col++) {
+      tile = Level.charAt(col, row);
+      if (Level.SLOPES[tile]) {
+        Draw.slope(col * size, row * size, size, Level.SLOPES[tile]);
+      }
+    }
+  }
+
   Draw.endBarrier(Level.pixelWidth(), 0, size);
 };
 
@@ -203,13 +223,19 @@ Draw.roundedRect = function (ctx, x, y, width, height, radius) {
   ctx.closePath();
 };
 
-// Draws whatever shape a slope tile's left/right height fractions describe
-// (from Level.SLOPES) -- a 45-degree tile is a plain triangle, a 22.5ish
-// tread is a trapezoid, and a flat placeholder (equal left/right) comes
-// out as a short block. Physics and drawing always match because they
-// both read the same table. Styled to match the flat grass/dirt blocks:
-// a solid dirt body with a grass cap band along the top.
+// Draws a slope tile. Physics and drawing always match because they both
+// read the same table (Level.SLOPES).
+//   - Simple slopes ({ left, right }) are one straight line: a 45-degree
+//     tile is a triangle, a 22.5ish tread is a trapezoid.
+//   - Tall slopes ({ segs }) are drawn one segment at a time.
+// Styled to match the flat grass/dirt blocks: a solid dirt body with a
+// grass cap band along the top.
 Draw.slope = function (x, y, size, shape) {
+  if (shape.segs) {
+    Draw.slopeSegments(x, y, size, shape.segs);
+    return;
+  }
+
   var ctx = Draw.ctx;
   var leftY = y + size - shape.left * size;
   var rightY = y + size - shape.right * size;
@@ -249,6 +275,73 @@ Draw.slope = function (x, y, size, shape) {
   ctx.stroke();
 };
 
+// Tall slopes (q Q w W): each segment is a little dirt wedge. Segments
+// marked surface:false are plain dirt fill with no grass on top.
+Draw.slopeSegments = function (x, y, size, segs) {
+  var ctx = Draw.ctx;
+  var capThickness = 8;
+  var bottom = y + size;
+  var i, s, x0, x1, y0, y1;
+
+  // dirt bodies, and grass caps on the walkable parts
+  for (i = 0; i < segs.length; i++) {
+    s = segs[i];
+    x0 = x + s.x0 * size;
+    x1 = x + s.x1 * size;
+    y0 = bottom - s.h0 * size;
+    y1 = bottom - s.h1 * size;
+
+    ctx.fillStyle = "#9b633d";
+    ctx.beginPath();
+    ctx.moveTo(x0, bottom);
+    ctx.lineTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x1, bottom);
+    ctx.closePath();
+    ctx.fill();
+
+    if (s.surface !== false) {
+      ctx.fillStyle = "#55b947";
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.lineTo(x1, Math.min(y1 + capThickness, bottom));
+      ctx.lineTo(x0, Math.min(y0 + capThickness, bottom));
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // outlines: the top edge of every segment, plus the outer left/right
+  // edges of the tile and the bottom. (No line between two segments that
+  // touch, so the fill doesn't show a seam.)
+  ctx.strokeStyle = "#4b3427";
+  ctx.lineWidth = CONFIG.LINE_WIDTH;
+  for (i = 0; i < segs.length; i++) {
+    s = segs[i];
+    x0 = x + s.x0 * size;
+    x1 = x + s.x1 * size;
+    y0 = bottom - s.h0 * size;
+    y1 = bottom - s.h1 * size;
+
+    ctx.beginPath();
+    if (s.x0 === 0) {
+      ctx.moveTo(x0, bottom);
+      ctx.lineTo(x0, y0);
+    } else {
+      ctx.moveTo(x0, y0);
+    }
+    ctx.lineTo(x1, y1);
+    if (s.x1 === 1) { ctx.lineTo(x1, bottom); }
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x0, bottom);
+    ctx.lineTo(x1, bottom);
+    ctx.stroke();
+  }
+};
+
 Draw.grassBlock = function (x, y, size) {
   var ctx = Draw.ctx;
   ctx.fillStyle = "#9b633d";
@@ -269,6 +362,15 @@ Draw.dirtBlock = function (x, y, size) {
   ctx.lineWidth = CONFIG.LINE_WIDTH;
   ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2,
                  size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH);
+};
+
+// Ghost dirt: looks like dirt, but the player passes through it.
+Draw.ghostBlock = function (x, y, size) {
+  Draw.dirtBlock(x, y, size);
+  if (Draw.GHOST_TINT) {
+    Draw.ctx.fillStyle = Draw.GHOST_TINT;
+    Draw.ctx.fillRect(x, y, size, size);
+  }
 };
 
 Draw.spikeUp = function (x, y, size) {
@@ -299,23 +401,23 @@ Draw.spikeDown = function (x, y, size) {
   ctx.stroke();
 };
 
-Draw.bounceBlock = function (x, y, size) {  
-  var ctx = Draw.ctx;  
-  ctx.fillStyle = "#3689e8";  
-  ctx.fillRect(x, y, size, size);  
-  ctx.strokeStyle = "#174f9c";  
-  ctx.lineWidth = CONFIG.LINE_WIDTH;  
-  ctx.strokeRect(x + 1.5, y + 1.5, size - 3, size - 3);  
-  // spring lines so players can tell it launches them  
-  ctx.strokeStyle = "#ffffff";  
-  ctx.lineWidth = 3;  
-  ctx.beginPath();  
-  ctx.moveTo(x + 8, y + size - 10);  
-  ctx.lineTo(x + size - 8, y + size - 10);  
-  ctx.moveTo(x + 8, y + size - 18);  
-  ctx.lineTo(x + size - 8, y + size - 18);  
-  ctx.stroke();  
-};  
+Draw.bounceBlock = function (x, y, size) {
+  var ctx = Draw.ctx;
+  ctx.fillStyle = "#3689e8";
+  ctx.fillRect(x, y, size, size);
+  ctx.strokeStyle = "#174f9c";
+  ctx.lineWidth = CONFIG.LINE_WIDTH;
+  ctx.strokeRect(x + 1.5, y + 1.5, size - 3, size - 3);
+  // spring lines so players can tell it launches them
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + 8, y + size - 10);
+  ctx.lineTo(x + size - 8, y + size - 10);
+  ctx.moveTo(x + 8, y + size - 18);
+  ctx.lineTo(x + size - 8, y + size - 18);
+  ctx.stroke();
+};
 
 Draw.finish = function (x, y, size) {
   var ctx = Draw.ctx;

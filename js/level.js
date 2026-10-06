@@ -140,6 +140,8 @@ Level.charAt = function (col, row) {
   return Level.grid[row].charAt(col);
 };
 
+// "_" (ghost dirt) is deliberately NOT in this list: it is drawn like dirt
+// but you can pass straight through it.
 Level.isSolid = function (col, row) {
   if (col < 0 && row >= 0 && row < CONFIG.ROWS) { return true; }
   if (col === Level.cols && row >= 0 && row < CONFIG.ROWS) { return true; }
@@ -152,17 +154,69 @@ Level.isBounce = function (col, row) {
   return tile === "B";
 };
 
+// SLOPE SHAPES
+// Heights are fractions of a tile: 0 = tile bottom, 1 = tile top.
+//
+// Simple slopes ( / \ e E r R ) are one straight line: { left, right }.
+//
+// Tall slopes ( q Q w W ) rise or fall TWO tiles over ONE column, so each
+// one is stacked in two tiles. Their shape is a list of segments
+// (x0..x1 across the tile, h0..h1 in height). A segment with
+// surface:false is only filled-in dirt that you can't stand on -- it is
+// there so the picture looks solid.
+//
+//   rising  (goes up to the right):   q on top of Q
+//   falling (goes down to the right): w on top of W
+//
+//        q                  w
+//       /Q                  W\
 Level.SLOPES = {
-  "/": { left: 0, right: 1 },
-  "\\": { left: 1, right: 0 },
-  "e": { left: 0, right: 0.5 },
-  "E": { left: 0.5, right: 1 },
-  "r": { left: 0.5, right: 0 },
-  "R": { left: 1, right: 0.5 },
-  "q": { left: 0.25, right: 0.25 },
-  "Q": { left: 0.75, right: 0.75 },
-  "w": { left: 0.25, right: 0.25 },
-  "W": { left: 0.75, right: 0.75 }
+  "/":  { left: 0,   right: 1 },
+  "\\": { left: 1,   right: 0 },
+  "e":  { left: 0,   right: 0.5 },
+  "E":  { left: 0.5, right: 1 },
+  "r":  { left: 0.5, right: 0 },
+  "R":  { left: 1,   right: 0.5 },
+
+  // upper half of a tall rising slope
+  "q": { segs: [
+    { x0: 0.5, x1: 1,   h0: 0, h1: 1 }
+  ] },
+  // lower half of a tall rising slope
+  "Q": { segs: [
+    { x0: 0,   x1: 0.5, h0: 0, h1: 1 },
+    { x0: 0.5, x1: 1,   h0: 1, h1: 1, surface: false }
+  ] },
+  // upper half of a tall falling slope
+  "w": { segs: [
+    { x0: 0,   x1: 0.5, h0: 1, h1: 0 }
+  ] },
+  // lower half of a tall falling slope
+  "W": { segs: [
+    { x0: 0,   x1: 0.5, h0: 1, h1: 1, surface: false },
+    { x0: 0.5, x1: 1,   h0: 1, h1: 0 }
+  ] }
+};
+
+// Finds the walkable segment of a tall-slope shape at a spot across the
+// tile (0 = left edge, 1 = right edge), or null if there is nothing to
+// stand on there.
+Level.surfaceSegment = function (shape, xInTile) {
+  for (var i = 0; i < shape.segs.length; i++) {
+    var s = shape.segs[i];
+    if (s.surface !== false && xInTile >= s.x0 && xInTile <= s.x1) { return s; }
+  }
+  return null;
+};
+
+// Height (0..1) of the walkable surface at xInTile, or null for none.
+Level.slopeHeightAt = function (shape, xInTile) {
+  if (shape.segs) {
+    var s = Level.surfaceSegment(shape, xInTile);
+    if (!s) { return null; }
+    return s.h0 + (s.h1 - s.h0) * (xInTile - s.x0) / (s.x1 - s.x0);
+  }
+  return shape.left + (shape.right - shape.left) * xInTile;
 };
 
 Level.slopeSurfaceY = function (x, row) {
@@ -171,14 +225,24 @@ Level.slopeSurfaceY = function (x, row) {
   if (!shape) { return null; }
 
   var xInTile = (x - col * CONFIG.TILE) / CONFIG.TILE;
-  var heightFrac = shape.left + (shape.right - shape.left) * xInTile;
+  var heightFrac = Level.slopeHeightAt(shape, xInTile);
+  if (heightFrac === null) { return null; }
   return row * CONFIG.TILE + (CONFIG.TILE - heightFrac * CONFIG.TILE);
 };
 
+// How steep the slope is: height gained per tile-width moved right.
+// 45 degrees = 1, the wide slopes = 0.5, the tall slopes = 2.
 Level.slopeGradient = function (x, row) {
   var col = Math.floor(x / CONFIG.TILE);
   var shape = Level.SLOPES[Level.charAt(col, row)];
   if (!shape) { return 0; }
+
+  if (shape.segs) {
+    var xInTile = (x - col * CONFIG.TILE) / CONFIG.TILE;
+    var s = Level.surfaceSegment(shape, xInTile);
+    if (!s) { return 0; }
+    return (s.h1 - s.h0) / (s.x1 - s.x0);
+  }
   return shape.right - shape.left;
 };
 
