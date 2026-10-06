@@ -1,5 +1,5 @@
 {
-  "_comment": "Every piece is 8 columns wide and 10 rows tall. Draw it like a picture. '.' is empty air, '#' is a solid block, '^' is an upward spike, 'v' is a downward spike, '-' is ammo, '1' is an enemy type 1, '2' is an enemy type 2, 'B' is a bounce block, 'S' is the start, 'F' is the finish. Slopes: '/' rises right, '\\' rises left, 'e'/'E'/'r'/'R' are gentler 22.5 slopes.",
+  "_comment": "Every piece is 8 columns wide and 10 rows tall. Draw it like a picture. . is empty air, # is a solid block, ^ is upward spike, v is downward spike, - is ammo, 1 is regular enemy, 2 is hopper enemy, S is start, F is finish, B is bounce block, / \\ e E r R q Q w W are slopes, _ is ghost dirt (visible but not solid), D is dirt.",
 
   "start": [
     "........",
